@@ -9,6 +9,7 @@ import thread
 import datetime
 import actionlib
 from actionlib_msgs.msg import GoalID
+from .speech_recog import speech_recognition_text
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Empty
@@ -51,7 +52,7 @@ class help_me_carry():
         self.Motion = self.session.service("ALMotion")
         self.RobotPos = self.session.service("ALRobotPosture")
         self.Tracker = self.session.service("ALTracker")
-
+        '''
         # topic的回调函数
         start_following_sub = self.Memory.subscribe("follow_switch")
         start_following_sub.signal.connect(self.callback_start_following)
@@ -59,7 +60,7 @@ class help_me_carry():
         start_navigation_sub.signal.connect(self.callback_start_navigation)
         face_detection_sub = self.Memory.subscribe("FaceDetected")
         face_detection_sub.signal.connect(self.callback_face_detection)
-
+        '''
         # ROS
         self.nav_as = actionlib.SimpleActionClient("/move_base", MoveBaseAction)
         self.cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
@@ -85,7 +86,7 @@ class help_me_carry():
 
         # 设置dialog语言
         self.Dialog.setLanguage("English")
-
+        '''
         # 加载pepper电脑里的topic
         self.Topic_path = '/home/nao/top/competetion_enu.top'
 
@@ -94,10 +95,7 @@ class help_me_carry():
 
         # ========================测试删除utf-8行不行===========================================
         self.Topic_name = self.Dialog.loadTopic(self.Topic_path.encode('utf-8'))
-
-        # 设置自主说话模式：说话的时候pepper的手会摆出随机的姿势
-        self.configure = {"bodyLanguageMode": "contextual"}
-
+        '''
         # 初始化头的位置
         self.Motion.setStiffnesses("Head", 1.0)
         self.Motion.setAngles("Head", [0., -0.25], .05)
@@ -125,6 +123,8 @@ class help_me_carry():
         self.log_enabled = True
 
         # 记录的路径
+
+
         self.log_face = open('./data/' + datetime.datetime.now().strftime('%Y_%m_%d_%H_%M') + '/log_faces.csv', 'w')
         self.log_people = open('./data/' + datetime.datetime.now().strftime('%Y_%m_%d_%H_%M') + '/log_people.csv', 'w')
         self.log_video = open('./data/' + datetime.datetime.now().strftime('%Y_%m_%d_%H_%M') + '/log_video.csv', 'w')
@@ -196,7 +196,7 @@ class help_me_carry():
         try:
             self.Dialog.unsubscribe("competition")
         except RuntimeError:
-            print "[Kamerider E ] : the event \'my_subscribe_test\' hasn't been subscribed"
+            print ("[Kamerider E ] : the event \'my_subscribe_test\' hasn't been subscribed")
 
     def callback_face_detection(self, msg):
         print('\033[0;32m [Kamerider I] ========face detection message======== \033[0m')
@@ -219,7 +219,7 @@ class help_me_carry():
                 elif len(timeFilteredResult) == 2:
                     if timeFilteredResult[0] in [2, 3]:
                         for s in timeFilteredResult[1]:
-                            print "Recognized: ", s
+                            print ("Recognized: ", s)
         face_array = []
         try:
             faceInfoArray = msg[1][0:len(msg[1]) - 1]
@@ -228,9 +228,9 @@ class help_me_carry():
                 faceShapeInfo = faceInfo[0]
                 # Second Field = Extra info .
                 faceExtraInfo = faceInfo[1]
-                print "  alpha %.3f - beta %.3f" % (faceShapeInfo[1], faceShapeInfo[2])
-                print "  width %.3f - height %.3f" % (faceShapeInfo[3], faceShapeInfo[4])
-                print '  ID:', faceExtraInfo[0], ', score= ', round(faceExtraInfo[1], 3), ', label= ', faceExtraInfo[2]
+                print ("  alpha %.3f - beta %.3f" % (faceShapeInfo[1], faceShapeInfo[2]))
+                print ("  width %.3f - height %.3f" % (faceShapeInfo[3], faceShapeInfo[4]))
+                print ('  ID:', faceExtraInfo[0], ', score= ', round(faceExtraInfo[1], 3), ', label= ', faceExtraInfo[2])
 
                 pose = {'alpha': round(faceShapeInfo[1], 2), 'beta': round(faceShapeInfo[2], 2),
                         'width': round(faceShapeInfo[3], 2), 'height': round(faceShapeInfo[4], 2)}
@@ -238,7 +238,7 @@ class help_me_carry():
                         'confidence': round(faceExtraInfo[1], 3), 'pose': pose,
                         'camerapose_robot': cameraPose_InRobotFrame, 'camerapose_torso': cameraPose_InTorsoFrame}
                 json_face = dumps(face)
-                print 'json_face:: ', json_face
+                print ('json_face:: ', json_face)
 
 
         except:
