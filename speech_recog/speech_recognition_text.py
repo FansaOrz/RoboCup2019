@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
+'''
 import time
 import urllib
 import json
@@ -40,4 +41,54 @@ def main(path):
             print("\033[0;32;40m\t[Kamerider W] : You don't need stop record\033[0m")
             if 0xFF == ord('q'):
                 return
+if __name__ == '__main__':
+    main("../audio_record/recog.wav")
+'''
+
+import requests
+import time
+import urllib
+import json
+import hashlib
+import base64
+
+URL = 'http://api.xfyun.cn/v1/service/v1/iat'
+APPID = '5c487dc0'
+API_KEY = '588f3f2f7a18769bafc778fdca809a9b'
+
+def main(path):
+    if_succe = False
+    curTime = str(int(time.time()))
+    param = "{\"engine_type\": \"sms-en16k\", \"aue\": \"raw\"}"
+    paramBase64 = base64.b64encode(param)
+
+    m2 = hashlib.md5()
+    m2.update(API_KEY + curTime + paramBase64)
+    checkSum = m2.hexdigest()
+    header = {
+        'X-CurTime': curTime,
+        'X-Param': paramBase64,
+        'X-Appid': APPID,
+        'X-CheckSum': checkSum,
+        'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+    }
+    while not if_succe:
+        f = open(path, 'rb')
+        file_content = f.read()
+        base64_audio = base64.b64encode(file_content)
+        body = urllib.urlencode({'audio': base64_audio})
+
+        r = requests.post(URL, headers=header, data=body)
+
+        result = json.loads(r.content)
+
+        if result["code"] == "0":
+            if_succe = True
+            data = str(result["data"]).lower()
+            print('\033[0;32m [Kamerider I] I heard' + data + ' \033[0m')
+            return data
+        else:
+            print("\033[0;32;40m\t[Kamerider W] : You don't need stop record\033[0m")
+#if __name__ == '__main__':
+#    main("../audio_record/test.wav")
 

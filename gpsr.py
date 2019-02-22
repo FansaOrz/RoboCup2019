@@ -70,8 +70,8 @@ class gpsr():
         self.enable_speech_recog = True
         self.SoundDet.setParameter("Sensitivity", .3)
         self.SoundDet.subscribe('sd')
-        self.SoundDet = self.Memory.subscriber("SoundDetected")
-        self.SoundDet.signal.connect(self.callback_sound_det)
+        self.SoundDet_s = self.Memory.subscriber("SoundDetected")
+        self.SoundDet_s.signal.connect(self.callback_sound_det)
         # 初始化关键字
         self.place = ["bathroom cabinet", "cabinet", "living room", "kitchen", "bedroom",
                       "bathroom", "bar", "cupboard", "dining table", "corridor", "stove",
