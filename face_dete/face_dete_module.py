@@ -14,7 +14,6 @@ class face_dete:
         self.Tracker = session.service("ALTracker")
         self.Memory = session.service("ALMemory")
         self.TextToSpe = session.service("ALTextToSpeech")
-        self.FaceCha = session.service("ALFaceCharacteristics")
         # 人脸检测部分
         if self.FaceDet.isRecognitionEnabled():
             # 可以让检测速度更快
@@ -35,9 +34,9 @@ class face_dete:
         while self.switch_face_dete:
             if self.face_id == 0:
                 num += 1
-                if num == 5:
+                if num == 6:
                     ro_angle = -ro_angle
-                    self.set_velocity(0, 0, ro_angle, 4)
+                    self.set_velocity(0, 0, ro_angle, 5)
                     continue
                 self.set_velocity(0, 0, ro_angle, 1)
                 time.sleep(1)
@@ -54,12 +53,11 @@ class face_dete:
                 continue
             if target_position[0] < .5 and target_position[1] < 0:
                 num += 1
-                if num > 20:
+                if num > 10:
                     self.Tracker.stopTracker()
                     self.Tracker.unregisterAllTargets()
                     self.TextToSpe.say("Hey! I have reached your position")
-                    self.TextToSpe.say("Can you help me carry some things?")
-                    self.TextToSpe.say("Please follow me")
+                    self.TextToSpe.say("Please follow me to the car to carry some items")
                     break
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec

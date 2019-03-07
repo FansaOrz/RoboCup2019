@@ -17,8 +17,7 @@ class face_dete_control:
         self.a.switch_face_dete = True
         print "======"
         print self.a.switch_face_dete
-        self.face_thread = Thread(target=self.a.start_face_dete(), args=[])
-        self.face_thread.start()
-        self.face_thread.join()
+        self.a.start_face_dete()
+
 
 
