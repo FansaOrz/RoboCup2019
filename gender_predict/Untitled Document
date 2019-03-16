@@ -1,0 +1,15 @@
+{u'face_list': 
+ [
+  {
+   u'angle': {u'yaw': -15.69, u'roll': -4.12, u'pitch': 12.53}, 
+   u'face_shape': {u'type': u'oval', u'probability': 0.66}, 
+   u'age': 25, 
+   u'location': {u'width': 207, u'top': 964.13, u'height': 186, u'rotation': -3, u'left': 359.05}, 
+   u'face_type': {u'type': u'human', u'probability': 1}, 
+   u'face_token': u'f271ac4796a20d93a74847c170bcb728', 
+   u'face_probability': 1
+  }
+ ], 
+ u'face_num': 1
+}
+

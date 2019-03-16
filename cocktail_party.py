@@ -1,11 +1,19 @@
 #! /usr/bin/env python
 # -*- encoding: UTF-8 -*-
+#! /usr/bin/env python
+# -*- encoding: UTF-8 -*-
 import qi
 import os
 import time
 import atexit
+import rospy
+
 import thread
 from gender_predict import baidu_gender
+from std_srvs.srv import Empty
+from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
+from actionlib_msgs.msg import GoalID
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from threading import Thread
 
 
@@ -17,6 +25,8 @@ class speech_person_recog():
         self.ip = params["ip"]
         self.port = params["port"]
         self.session = qi.Session()
+        rospy.init_node("cocktail_party")
+
         try:
             self.session.connect("tcp://" + self.ip + ":" + str(self.port))
         except RuntimeError:
@@ -45,11 +55,20 @@ class speech_person_recog():
         self.thread_recording = Thread(target=self.record_audio, args=(None,))
         self.thread_recording.daemon = True
         self.audio_terminate = False
+        # ROS 订阅器和发布器
+        self.nav_as = actionlib.SimpleActionClient("/move_base", MoveBaseAction)
+        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.goal_cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=1)
+        self.nav_as.wait_for_server()
+        # 清除costmap
+        self.map_clear_srv = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
+        self.map_clear_srv()
+        # amcl定位
+        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         # 声明一些变量
-        self.num_man = 0
-        self.num_woman = 0
         self.angle = -.2
         self.if_need_record = False
+        self.point_dataset = self.load_waypoint("waypoints.txt")
         # 关闭basic_awareness
         if self.BasicAwa.isEnabled():
             self.BasicAwa.setEnabled(False)
@@ -106,76 +125,31 @@ class speech_person_recog():
     def say(self, text):
         self.TextToSpe.say(text)
 
-    def callback_sound_det(self, msg):
-        print ('\033[0;32m [Kamerider I] Sound detected (In callback function) \033[0m')
-        ox = 0
-        for i in range(len(msg)):
-            if msg[i][1] == 1:
-                ox = 1
-        if ox == 1 and self.enable_speech_recog:
-            self.record_time = time.time() + self.record_delay
-            print "self.record_time += 2s ... ", self.record_time
-            if not self.thread_recording.is_alive():
-                self.start_recording(reset=True)
-            while self.recog_result == "None":
-                time.sleep(1)
-                continue
-            self.analyze_content()
-        else:
-            return None
-
-    def record_audio(self, hints, withBeep = True):
-        if self.if_need_record:
-            # 亮灯
-            self.Leds.on("MyGroup")
-            if withBeep:
-                # 参数 playSine(const int& frequence, const int& gain, const int& pan, const float& duration)
-                self.AudioPla.playSine(1000, self.beep_volume, 1, .3)
-                time.sleep(.5)
-            print('\033[0;32m [Kamerider I] start recording... \033[0m')
-            channels = [0, 0, 1, 0]
-            self.AudioRec.startMicrophonesRecording("/home/nao/audio/recog.wav", "wav", 16000, channels)
-            while time.time() < self.record_time:
-                if self.audio_terminate:
-                    # 如果终止为True
-                    self.AudioRec.stopMicrophonesRecording()
-                    print('\033[0;32m [Kamerider I] Killing recording... \033[0m')
-                    return None
-                time.sleep(.1)
-            self.Leds.off("MyGroup")
-            self.AudioRec.stopMicrophonesRecording()
-            self.AudioRec.recording_ended = True
-
-            if not os.path.exists('./audio_record'):
-                # TODO
-                os.mkdir('./audio_record', 0o755)
-            # 复制录下的音频到自己的电脑上
-            cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":/home/nao/audio/recog.wav ./audio_record"
-            os.system(cmd)
-            print('\033[0;32m [Kamerider I] Record ended start recognizing \033[0m')
-            self.recog_result = speech_recognition_text.main("./audio_record/recog.wav").lower()
-
-    def set_volume(self, volume):
-        self.TextToSpe.setVolume(volume)
-
-    def turn_around(self):
-        self.TextToSpe.say("I am going to turn around")
-        self.Motion.move(0, 0, 1)
-        duration = time.time() + 3.8
-        while time.time() < duration:
-            continue
-        self.Motion.stopMove()
-        self.take_picture()
-
-    def take_picture(self):
-        self.TextToSpe.say("I am going to take a picture")
-        self.PhotoCap.takePictures(3, '/home/nao/picture', 'image')
-        cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":/home/nao/picture/image_0.jpg ./person_image"
-        os.system(cmd)
-        self.num_man, self.num_woman = baidu_gender.gender_predict("./person_image/image_0.jpg")
-        self.TextToSpe.say("There are " + str(self.num_woman + self.num_man) + "people")
-        self.TextToSpe.say("the number of man is " + str(self.num_man))
-        self.TextToSpe.say("the number of woman is " + str(self.num_woman))
+    def load_waypoint(self, file_name):
+        curr_pos = PoseStamped()
+        f = open(file_name, 'r')
+        sourceInLines = f.readlines()
+        dataset_points = {}
+        for line in sourceInLines:
+            temp1 = line.strip('\n')
+            temp2 = temp1.split(',')
+            point_temp = MoveBaseGoal()
+            point_temp.target_pose.header.frame_id = '/map'
+            point_temp.target_pose.header.stamp = curr_pos.header.stamp
+            point_temp.target_pose.header.seq = curr_pos.header.seq
+            point_temp.target_pose.pose.position.x = float(temp2[1])
+            point_temp.target_pose.pose.position.y = float(temp2[2])
+            point_temp.target_pose.pose.position.z = float(temp2[3])
+            point_temp.target_pose.pose.orientation.x = float(temp2[4])
+            point_temp.target_pose.pose.orientation.y = float(temp2[5])
+            point_temp.target_pose.pose.orientation.z = float(temp2[6])
+            point_temp.target_pose.pose.orientation.w = float(temp2[7])
+            dataset_points[temp2[0]] = point_temp
+        print ("↓↓↓↓↓↓↓↓↓↓↓↓point↓↓↓↓↓↓↓↓↓↓↓↓")
+        print (dataset_points)
+        print ("↑↑↑↑↑↑↑↑↑↑↑↑point↑↑↑↑↑↑↑↑↑↑↑↑")
+        print ('\033[0;32m [Kamerider I] Points Loaded! \033[0m')
+        return dataset_points
 
     def keyboard_control(self):
         print('\033[0;32m [Kamerider I] Start keyboard control \033[0m')

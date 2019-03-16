@@ -13,11 +13,13 @@ class gender_predict:
         self.Memory = session.service("ALMemory")
         self.FaceCha = session.service("ALFaceCharacteristics")
 
+        self.FaceCha.subscribe("kkkkkk")
+
         # face detection 回调函数
         self.face_id = []
         self.FaceDet.subscribe("HumanGreeter")
-        #self.Face_Dete = self.Memory.subscriber("FaceDetected")
-        self.Face_Dete = self.Memory.subscriber("PeoplePerception/PeopleDetected")
+        self.Face_Dete = self.Memory.subscriber("FaceDetected")
+        #self.Face_Dete = self.Memory.subscriber("PeoplePerception/PeopleDetected")
         self.Face_Dete.signal.connect(self.callback_face_dete)
 
         self.face_gender = Thread(target=self.start_gender_recog(), args=[])
