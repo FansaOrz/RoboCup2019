@@ -78,7 +78,7 @@ class help_me_carry():
         self.angle = -.33
         self.if_ask_time = False
         self.if_need_record = False
-        self.point_dataset = self.load_waypoint("waypoints.txt")
+        self.point_dataset = self.load_waypoint("waypoints_help.txt")
         #    LED的group
         self.led_name = ["Face/Led/Blue/Right/0Deg/Actuator/Value", "Face/Led/Blue/Right/45Deg/Actuator/Value",
                          "Face/Led/Blue/Right/90Deg/Actuator/Value", "Face/Led/Blue/Right/135Deg/Actuator/Value",
@@ -202,7 +202,7 @@ class help_me_carry():
                 self.kill_recording_thread()
                 # navigation function
                 self.TextToSpe.say("I'm going to the kitchen")
-                self.go_to_waypoint(self.point_dataset[self.go_back[i]], self.go_back[i], label="back")
+                self.go_to_waypoint(self.point_dataset[self.go_back[i]], self.go_back[i], label="go_back")
                 # 调整头部的角度
                 self.angle = -.4
                 self.face_dete()
@@ -355,7 +355,7 @@ class help_me_carry():
             if count_time == 3:
                 self.map_clear_srv()
                 count_time = 0
-        if label == "back":
+        if label == "go_back":
             print('\033[0;32m [Kamerider I] I have arrived at ' + destination + ', start looking for people \033[0m')
             self.TextToSpe.say("I have arrived at " + destination)
             # find person function
