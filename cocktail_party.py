@@ -80,12 +80,15 @@ class speech_person_recog():
                          "Face/Led/Green/Left/270Deg/Actuator/Value", "Face/Led/Green/Left/315Deg/Actuator/Value"]
         self.Leds.createGroup("MyGroup", self.led_name)
         # 声明一些变量
-        self.current_person_name = "none"
-        self.current_drink_name = "none"
+        self.current_person_name = []
+        self.current_drink_name = []
         self.gender = "none"
+        self.positive_list = ["yes", "of course", "we do"]
+        self.negative_list = ["no", "sorry", "we don't", "shame"]
         self.name_list = ["Jack", "Jerry", "Tom"]
         self.drink_list = ["apple juice", "wine", "beer"]
         self.angle = -.25
+        self.if_missing = True
         self.head_fix = True
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_party.txt")
@@ -221,11 +224,26 @@ class speech_person_recog():
                 return
         for i in range(len(self.drink_list)):
             if re.search(self.drink_list[i].lower(), self.recog_result) != None:
-                self.recog_result = "None"
-                # 记下当前人的名字
-                self.current_drink_name = self.drink_list[i]
+                self.current_drink_name.append(self.drink_list[i])
+            self.recog_result = "None"
+            # 记下当前饮品的名字
+            if self.current_drink_name != []:
                 self.if_need_record = False
                 self.TextToSpe.say("OK, I will take the " + self.current_drink_name + " to you")
+                return
+
+        for i in range(len(self.positive_list)):
+            if re.search(self.positive_list[i].lower(), self.recog_result) != None:
+                self.recog_result = "None"
+                self.if_need_record = False
+                self.if_missing = False
+                self.TextToSpe.say("Ok, I will serve the other guest")
+                return
+        for i in range(len(self.negative_list)):
+            if re.search(self.negative_list[i].lower(), self.recog_result) != None:
+                self.recog_result = "None"
+                self.if_need_record = False
+                self.if_missing = True
                 return
         self.say("sorry, please tell me again")
         self.start_recording(reset=True)
@@ -304,12 +322,24 @@ class speech_person_recog():
         self.say("Please tell me what do you want to order?")
         self.start_recording(reset=True)
         self.analyze_content()
-        #self.go_to_waypoint()
+        # 回到吧台
+        #self.go_to_waypoint(self.point_dataset["party_room"], "party room", "first")
+        print "======go back to the bar table======="
         if self.gender == "male":
             self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name + "and his gender is " + self.gender)
         else:
             self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name + "and her gender is " + self.gender)
-
+        self.say("I'm not sure if you have this type drink, could you tell me?")
+        self.start_recording(reset=True)
+        self.analyze_content()
+        if self.if_missing == True:
+            # ask the alternatives drinks
+            self.say("can you provide me the list of aviable alternatives?")
+            self.start_recording(reset=True)
+            self.analyze_content()
+        else:
+            print "go back to the party room"
+            # self.go_to_waypoint(self.point_dataset["party_room"], "party room", "first")
 
     def kill_recording_thread(self):
         if self.thread_recording.is_alive():
