@@ -86,8 +86,8 @@ class speech_person_recog():
         self.negative_list = ["no", "sorry", "we don't", "regret"]
         self.name_list = ["Jack", "Jerry", "Tom"]
         self.drink_list = ["apple juice", "wine", "beer"]
+        self.stop_list = ["stop", "go back"]
         self.angle = -.25
-        self.if_missing = True
         self.head_fix = True
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_party.txt")
@@ -146,7 +146,6 @@ class speech_person_recog():
         cmd = "sshpass -p kurakura326 scp ./person_image/result.jpg nao@" + str(self.ip) + ":~/.local/share/PackageManager/apps/boot-config/html"
         os.system(cmd)
         self.TabletSer.hideImage()
-        time.sleep(0.5)
         self.TabletSer.showImageNoCache("http://198.18.0.1/apps/boot-config/result.jpg")
 
     def head_fix_thread(self, arg):
@@ -215,6 +214,13 @@ class speech_person_recog():
     def analyze_content(self):
         # print "1", self.recog_result
         #print "analyze_content"
+        # 包含停止
+        for i in range(len(self.stop_list)):
+            if re.search(self.stop_list[i].lower(), self.recog_result) != None:
+                self.recog_result = "00"
+                # 记下当前人的名字
+                self.TextToSpe.say("")
+                return "STOP"
         # 包含姓名
         for i in range(len(self.name_list)):
             if re.search(self.name_list[i].lower(), self.recog_result) != None:
@@ -222,7 +228,7 @@ class speech_person_recog():
                 # 记下当前人的名字
                 self.current_person_name = self.name_list[i]
                 self.TextToSpe.say("hey " + self.name_list[i] + " , what do you want")
-                return
+                return "NAME"
         # include drink
         # print "2", self.recog_result
         self.current_drink_name = []
@@ -239,28 +245,25 @@ class speech_person_recog():
                         self.TextToSpe.say("OK, I will take the " + self.current_drink_name[0] + " to you")
                     else:
                         self.TextToSpe.say("OK, I will ask the guest again")
-                return
+                return "DRINK"
         # print "3", self.recog_result
         for i in range(len(self.positive_list)):
-            print "--------"
-            print self.positive_list[i].lower()
-            print self.recog_result
+            # print "--------"
+            # print self.positive_list[i].lower()
+            # print self.recog_result
             if re.search(self.positive_list[i].lower(), self.recog_result) != None:
                 self.recog_result = "00"
                 self.if_need_record = False
-                self.if_missing = False
-                self.TextToSpe.say("Ok, I will serve the other guest")
-                return
+                return "POSITIVE"
         # print "4", self.recog_result
         for i in range(len(self.negative_list)):
-            print "--------"
-            print self.negative_list[i].lower()
-            print self.recog_result
+            # print "--------"
+            # print self.negative_list[i].lower()
+            # print self.recog_result
             if re.search(self.negative_list[i].lower(), self.recog_result) != None:
                 self.recog_result = "00"
                 self.if_need_record = False
-                self.if_missing = True
-                return
+                return "NEGATIVE"
         # print "5", self.recog_result
         self.say("sorry, please tell me again")
         self.start_recording(reset=True)
@@ -332,6 +335,7 @@ class speech_person_recog():
     def dialog_with_people(self):
         # 抬头
         self.angle = -.5
+        self.Motion.setAngles("Head", [0., self.angle], .1)
         time.sleep(1)
         # 拍照识别性别
         self.take_picture()
@@ -345,6 +349,8 @@ class speech_person_recog():
         self.analyze_content()
         # 回到吧台
         self.go_to_waypoint(self.point_dataset["bar"], "bar", "first")
+        self.angle = -.5
+        self.Motion.setAngles("Head", [0., self.angle], .1)
         print "======go back to the bar table======="
         if self.gender == "male":
             self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name[0] + ", and his gender is " + self.gender)
@@ -355,21 +361,34 @@ class speech_person_recog():
         self.current_drink_name = []
         self.say("I'm not sure if you have this kind of drink, could you tell me?")
         self.start_recording(reset=True)
-        self.analyze_content()
-        if self.if_missing == True:
+        result = self.analyze_content()
+        if result == "NEGATIVE":
             # ask the alternatives drinks
-            self.say("can you provide me the list of aviable alternatives?")
+            self.say("Could you provide me the list of three alternatives?")
             self.start_recording(reset=True)
             self.analyze_content()
             self.go_to_waypoint(self.point_dataset["cocktail_party_room"], "cocktail_party_room", "first")
+            self.angle = -.5
+            self.Motion.setAngles("Head", [0., self.angle], .1)
+            self.say(self.current_person_name + " ,please come here")
+            time.sleep(2)
             self.say("I am sorry to inform you that we do not have " + self.old_drink + " any more. Could you choose a type of drink from ")
             for i in range(len(self.current_drink_name)):
                 self.say(self.current_drink_name[i] + " ")
             self.start_recording(reset=True)
             self.analyze_content()
-        else:
-            print "go back to the party room"
-            self.go_to_waypoint(self.point_dataset["cocktail_party_room"], "cocktail_party_room", "first")
+        elif result == "POSITIVE":
+            self.TextToSpe.say("Do you want me to serve the other guests ?")
+            self.start_recording(reset=True)
+            result = self.analyze_content()
+            if result == "POSITIVE":
+                print "go back to the party room"
+                self.go_to_waypoint(self.point_dataset["cocktail_party_room"], "cocktail_party_room", "first")
+                self.angle = -.5
+                self.Motion.setAngles("Head", [0., self.angle], .1)
+                self.dialog_with_people()
+            elif result == "NEGATIVE":
+                self.TextToSpe.say("Ok, I will stop.")
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
         # if duration > 0 : stop after duration(sec)

@@ -22,7 +22,6 @@ def gender_pre(img_name):
     f = open(img_name, 'rb')
     image = base64.b64encode(f.read())
     image64 = str(image).encode("utf-8")
-    image_type = "BASE64"
     params = {"image":''+image64+'',"image_type":"BASE64","face_field":"gender,faceshape", "max_face_num":10}
     params = urllib.urlencode(params).encode("utf-8")
     access_token = content1.split("\"")[13]
