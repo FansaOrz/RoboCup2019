@@ -20,24 +20,26 @@ def frame2base64(frame):
 
 def gender_pre(img_name):
     context = ssl._create_unverified_context()
-    #cv2.namedWindow("wave", cv2.WINDOW_NORMAL)
+    cv2.namedWindow("wave", cv2.WINDOW_NORMAL)
     # client_id 为官网获取的AK， client_secret 为官网获取的SK
     host = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=mpIzjdsc1j3GmRZLrINZ1Qpy&client_secret=1p54tkFSPUG4Oy0ED2YSHBKlbCLqYklT'
     request = urllib2.Request(host)
     request.add_header('Content-Type', 'application/json; charset=UTF-8')
     response = urllib2.urlopen(request, context=context)
     content1 = response.read()
-    capture = cv2.VideoCapture(2)
+    #time.sleep(2)
+    capture = cv2.VideoCapture(3)
     success, frame = capture.read()
     request_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/gesture"
     while success:
-        #cv2.imwrite(img_name, frame)
-        #f = open(img_name, 'rb')
+        cv2.imwrite(img_name, frame)
+        f = open(img_name, 'rb')
 
-        image64 = frame2base64(frame)
-        #image = base64.b64encode(frame)
-        #image = base64.b64encode(f.read())
-        #image64 = str(image).encode("utf-8")
+        #image64 = frame2base64(frame)
+        #print type(frame)
+        #image = base64.b64encode(frame.encode())
+        image = base64.b64encode(f.read())
+        image64 = str(image).encode("utf-8")
         params = {"image":''+image64+''}
         params = urllib.urlencode(params).encode("utf-8")
         access_token = content1.split("\"")[13]
@@ -51,8 +53,11 @@ def gender_pre(img_name):
             continue
         content = response.read()
         dict_info = json.loads(content)
-        print dict_info
-        result_list = dict_info['result']
+        #print dict_info
+        try:
+            result_list = dict_info['result']
+        except:
+            continue
         print "========"
         print result_list
         print "========"
@@ -62,7 +67,7 @@ def gender_pre(img_name):
             right = int(result_list[i]["left"] + result_list[i]["width"])
             bottom = int(result_list[i]["top"] + result_list[i]["height"])
             cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-        #cv2.imshow("wave", frame)
+        cv2.imshow("wave", frame)
         if cv2.waitKey(1) >= 0:
             break
         success, frame = capture.read()

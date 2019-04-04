@@ -40,7 +40,7 @@ def gender_pre(img_name):
     try:
         face_list = dict_info["result"]["face_list"]
     except:
-        return 0, 0
+        return 0, 0, "none"
     for i in range(len(face_list)):
         left = int(face_list[i]["location"]["left"])
         top = int(face_list[i]["location"]["top"])

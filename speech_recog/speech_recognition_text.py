@@ -12,7 +12,6 @@ APPID = '5c487dc0'
 API_KEY = '588f3f2f7a18769bafc778fdca809a9b'
 
 def main(path):
-    print "++++++++++++++++++++++++++++"
     if_succe = False
     curTime = str(int(time.time()))
     param = "{\"engine_type\": \"sms-en16k\", \"aue\": \"raw\"}"
@@ -46,7 +45,7 @@ def main(path):
                 print('\033[0;32m [Kamerider I] I heard' + data + ' \033[0m')
                 return data
             else:
-                return "none"
+                return "00"
         else:
             print("\033[0;33m [Kamerider W] : You don't need stop record\033[0m")
             time.sleep(5)

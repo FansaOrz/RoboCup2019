@@ -79,8 +79,8 @@ class gpsr():
                       "bed", "bidet", "wardrobe"]
         self.item = ["water", "cookies", "soap", "pasta", "milk", "pringles", "drinks", "food"
                      "coke", "beer", "noodles"]
-        self.action = ["tell me how many", "tell me the name", "what day is today", "someone", "the day of the month", "tell the time",
-                       "tell what day is tomorrow", "tell me how many", "answer a question",
+        self.action = ["tell me how many", "tell me the name", "what day is today", "someone", "the day of the month",
+                       "tell what day is tomorrow", "tell me how many", "answer a question", "tell the time",
                        "place", "locate a person"]
         self.name = ["Jamie", "Robin", "Taylor", "Jordan", "Tracy", "me", "Morgan"]
         self.go_first = ["get", "locate", "find"]
@@ -212,9 +212,6 @@ class gpsr():
         os.system(cmd)
         print('\033[0;32m [Kamerider I] Record ended start recognizing \033[0m')
         self.recog_result = speech_recognition_text.speech_recog("./audio_record/recog.wav")
-
-
-
 
     def speech_recog(self):
         channels = [0, 0, 1, 0]

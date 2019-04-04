@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 # -*- encoding: UTF-8 -*-
-#! /usr/bin/env python
-# -*- encoding: UTF-8 -*-
 import qi
 import os
 import re
@@ -80,11 +78,12 @@ class speech_person_recog():
                          "Face/Led/Green/Left/270Deg/Actuator/Value", "Face/Led/Green/Left/315Deg/Actuator/Value"]
         self.Leds.createGroup("MyGroup", self.led_name)
         # 声明一些变量
-        self.current_person_name = []
+        self.current_person_name = "none"
         self.current_drink_name = []
         self.gender = "none"
+        self.old_drink = "none"
         self.positive_list = ["yes", "of course", "we do"]
-        self.negative_list = ["no", "sorry", "we don't", "shame"]
+        self.negative_list = ["no", "sorry", "we don't", "regret"]
         self.name_list = ["Jack", "Jerry", "Tom"]
         self.drink_list = ["apple juice", "wine", "beer"]
         self.angle = -.25
@@ -107,7 +106,7 @@ class speech_person_recog():
         self.Dialog.setLanguage("English")
         # 录下的音频保存的路径
         self.audio_path = '/home/nao/audio/record.wav'
-        self.recog_result = "None"
+        self.recog_result = "00"
         self.RobotPos.goToPosture("StandInit", .2)
         print "getPostureList", self.RobotPos.getPostureList()
         print "getPosture", self.RobotPos.getPosture()
@@ -121,11 +120,11 @@ class speech_person_recog():
         # 设置说话速度
         self.TextToSpe.setParameter("speed", 75.0)
         # 初始化录音
-        self.record_delay = 2
+        self.record_delay = 2.5
         self.speech_hints = []
         self.enable_speech_recog = True
         # 1代表最灵敏
-        self.SoundDet.setParameter("Sensitivity", .7)
+        self.SoundDet.setParameter("Sensitivity", .5)
         self.SoundDet.subscribe('sd')
         self.SoundDet_s = self.Memory.subscriber("SoundDetected")
         self.SoundDet_s.signal.connect(self.callback_sound_det)
@@ -154,7 +153,7 @@ class speech_person_recog():
         self.Motion.setStiffnesses("head", 1.0)
         while True:
             if self.head_fix:
-                print "=====self.angle:====", self.angle
+                #print "=====self.angle:====", self.angle
                 self.Motion.setAngles("Head", [0., self.angle], .2)
             time.sleep(3)
 
@@ -202,10 +201,10 @@ class speech_person_recog():
                     ox = 1
             if ox == 1 and self.enable_speech_recog:
                 self.record_time = time.time() + self.record_delay
-                print "self.record_time += 2s ... ", self.record_time
+                print "self.record_time += 3s ... ", self.record_time
                 #if not self.thread_recording.is_alive():
                 #    self.start_recording(reset=True)
-                while self.recog_result == "None":
+                while self.recog_result == "00":
                     time.sleep(1)
                     continue
             else:
@@ -214,37 +213,55 @@ class speech_person_recog():
             print ('\033[0;32m [Kamerider I] Sound detected, but we don\'t need to record this audio \033[0m')
 
     def analyze_content(self):
-        print "analyze_content"
+        # print "1", self.recog_result
+        #print "analyze_content"
+        # 包含姓名
         for i in range(len(self.name_list)):
             if re.search(self.name_list[i].lower(), self.recog_result) != None:
-                self.recog_result = "None"
+                self.recog_result = "00"
                 # 记下当前人的名字
                 self.current_person_name = self.name_list[i]
                 self.TextToSpe.say("hey " + self.name_list[i] + " , what do you want")
                 return
+        # include drink
+        # print "2", self.recog_result
+        self.current_drink_name = []
         for i in range(len(self.drink_list)):
             if re.search(self.drink_list[i].lower(), self.recog_result) != None:
-                self.current_drink_name.append(self.drink_list[i])
-            self.recog_result = "None"
-            # 记下当前饮品的名字
-            if self.current_drink_name != []:
-                self.if_need_record = False
-                self.TextToSpe.say("OK, I will take the " + self.current_drink_name + " to you")
+                for j in range(len(self.drink_list)):
+                    if re.search(self.drink_list[j].lower(), self.recog_result) != None:
+                        self.current_drink_name.append(self.drink_list[j])
+                self.recog_result = "00"
+                # 记下当前饮品的名字
+                if self.current_drink_name != []:
+                    self.if_need_record = False
+                    if len(self.current_drink_name) == 1:
+                        self.TextToSpe.say("OK, I will take the " + self.current_drink_name[0] + " to you")
+                    else:
+                        self.TextToSpe.say("OK, I will ask the guest again")
                 return
-
+        # print "3", self.recog_result
         for i in range(len(self.positive_list)):
+            print "--------"
+            print self.positive_list[i].lower()
+            print self.recog_result
             if re.search(self.positive_list[i].lower(), self.recog_result) != None:
-                self.recog_result = "None"
+                self.recog_result = "00"
                 self.if_need_record = False
                 self.if_missing = False
                 self.TextToSpe.say("Ok, I will serve the other guest")
                 return
+        # print "4", self.recog_result
         for i in range(len(self.negative_list)):
+            print "--------"
+            print self.negative_list[i].lower()
+            print self.recog_result
             if re.search(self.negative_list[i].lower(), self.recog_result) != None:
-                self.recog_result = "None"
+                self.recog_result = "00"
                 self.if_need_record = False
                 self.if_missing = True
                 return
+        # print "5", self.recog_result
         self.say("sorry, please tell me again")
         self.start_recording(reset=True)
         self.analyze_content()
@@ -302,11 +319,15 @@ class speech_person_recog():
             self.take_picture()
 
     def start(self):
-        self.go_to_waypoint(self.point_dataset["party_room"], "party room", "first")
+        self.go_to_waypoint(self.point_dataset["cocktail_party_room"], "cocktail_party_room", "first")
         # find people
         # TODO
         # start dialog
         self.dialog_with_people()
+
+    def stop_motion(self):
+        self.cancel_plan()
+        self.set_velocity(0, 0, 0)
 
     def dialog_with_people(self):
         # 抬头
@@ -323,13 +344,16 @@ class speech_person_recog():
         self.start_recording(reset=True)
         self.analyze_content()
         # 回到吧台
-        #self.go_to_waypoint(self.point_dataset["party_room"], "party room", "first")
+        self.go_to_waypoint(self.point_dataset["bar"], "bar", "first")
         print "======go back to the bar table======="
         if self.gender == "male":
-            self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name + "and his gender is " + self.gender)
+            self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name[0] + ", and his gender is " + self.gender)
         else:
-            self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name + "and her gender is " + self.gender)
-        self.say("I'm not sure if you have this type drink, could you tell me?")
+            self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name[0] + ", and her gender is " + self.gender)
+        self.old_drink = self.current_drink_name[0]
+        # 清空饮品名字
+        self.current_drink_name = []
+        self.say("I'm not sure if you have this kind of drink, could you tell me?")
         self.start_recording(reset=True)
         self.analyze_content()
         if self.if_missing == True:
@@ -337,9 +361,33 @@ class speech_person_recog():
             self.say("can you provide me the list of aviable alternatives?")
             self.start_recording(reset=True)
             self.analyze_content()
+            self.go_to_waypoint(self.point_dataset["cocktail_party_room"], "cocktail_party_room", "first")
+            self.say("I am sorry to inform you that we do not have " + self.old_drink + " any more. Could you choose a type of drink from ")
+            for i in range(len(self.current_drink_name)):
+                self.say(self.current_drink_name[i] + " ")
+            self.start_recording(reset=True)
+            self.analyze_content()
         else:
             print "go back to the party room"
-            # self.go_to_waypoint(self.point_dataset["party_room"], "party room", "first")
+            self.go_to_waypoint(self.point_dataset["cocktail_party_room"], "cocktail_party_room", "first")
+
+    def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
+        # if duration > 0 : stop after duration(sec)
+        tt = Twist()
+        tt.linear.x = x
+        tt.linear.y = y
+        tt.angular.z = theta
+        self.cmd_vel_pub.publish(tt)
+        if duration < 0: return None
+        tic = time.time()
+        while time.time() - tic < duration:
+            self.cmd_vel_pub.publish(tt)
+            time.sleep(0.1)
+        tt = Twist()
+        tt.linear.x = 0
+        tt.linear.y = 0
+        tt.angular.z = 0
+        self.cmd_vel_pub.publish(tt)
 
     def kill_recording_thread(self):
         if self.thread_recording.is_alive():
@@ -370,6 +418,20 @@ class speech_person_recog():
                 command = raw_input('next command : ')
                 if command == 'st':
                     self.start()
+                elif command == 'w':
+                    self.set_velocity(0.25, 0, 0)
+                elif command == 's':
+                    self.stop_motion()
+                elif command == 'x':
+                    self.set_velocity(-0.25, 0, 0)
+                elif command == 'a':
+                    self.set_velocity(0, 0.25, 0)
+                elif command == 'd':
+                    self.set_velocity(0, -0.25, 0)
+                elif command == 'q':
+                    self.set_velocity(0, 0, 0.35)
+                elif command == 'e':
+                    self.set_velocity(0, 0, -0.35)
                 elif command == 'c':
                     break
                 elif command == 'dwp':
