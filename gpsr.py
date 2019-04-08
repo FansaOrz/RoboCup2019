@@ -26,9 +26,10 @@ class gpsr():
         # 连接pepper
         try:
             self.session.connect("tcp://" + self.ip + ":" + str(self.port))
-        except RuntimeError:
+        except Exception as e:
+            print e
             # 输出红字
-            print("\033[0;30;40m\t[Kamerider E] : connection Error!!\033[0m")
+            print("\033[0;30m\t[Kamerider E] : connection Error!!\033[0m")
             sys.exit(1)
 
         # 需要的naoqi的服务
@@ -47,7 +48,7 @@ class gpsr():
         try:
             self.AudioRec.stopMicrophonesRecording()
         except BaseException:
-            print("\033[0;32;40m\t[Kamerider W] : You don't need stop record\033[0m")
+            print("\033[0;33m\t[Kamerider W] : You don't need stop record\033[0m")
         # topic对话的回调函数
 
         # 录音的函数
@@ -73,18 +74,22 @@ class gpsr():
         self.SoundDet_s = self.Memory.subscriber("SoundDetected")
         self.SoundDet_s.signal.connect(self.callback_sound_det)
         # 初始化关键字
-        self.place = ["bathroom cabinet", "cabinet", "living room", "kitchen", "bedroom",
-                      "bathroom", "bar", "cupboard", "dining table", "corridor", "stove",
-                      "sofa", "shower", "toilet", "washing machine", "towel rail", "washbasin",
-                      "bed", "bidet", "wardrobe"]
-        self.item = ["water", "cookies", "soap", "pasta", "milk", "pringles", "drinks", "food"
-                     "coke", "beer", "noodles"]
-        self.action = ["tell me how many", "tell me the name", "what day is today", "someone", "the day of the month",
-                       "tell what day is tomorrow", "tell me how many", "answer a question", "tell the time",
-                       "place", "locate a person"]
-        self.name = ["Jamie", "Robin", "Taylor", "Jordan", "Tracy", "me", "Morgan"]
-        self.go_first = ["get", "locate", "find"]
-        self.get_first = ["put", ""]
+        # self.place = ["bathroom cabinet", "cabinet", "living room", "kitchen", "bedroom",
+        #               "bathroom", "bar", "cupboard", "dining table", "corridor", "stove",
+        #               "sofa", "shower", "toilet", "washing machine", "towel rail", "washbasin",
+        #               "bed", "bidet", "wardrobe"]
+        # self.item = ["water", "cookies", "soap", "pasta", "milk", "pringles", "drinks", "food"
+        #              "coke", "beer", "noodles"]
+        # self.action = ["tell me how many", "tell me the name", "what day is today", "someone", "the day of the month",
+        #                "tell what day is tomorrow", "tell me how many", "answer a question", "tell the time",
+        #                "place", "locate a person"]
+        # self.name = ["Jamie", "Robin", "Taylor", "Jordan", "Tracy", "me", "Morgan"]
+        # self.go_first = ["get", "locate", "find"]
+        # self.get_first = ["put", ""]
+        self.action = ["say", "go to", "look for", "answer", "tell"]
+        self.place = ["baby chair", "corridor", "tv couch"]
+        self.person_name = ["hayden", "me"]
+        self.content = ["day of week", "name of person"]
         # 订阅相机
         # 当前时间戳（订阅相机的名字，每个只能使用6次）
         ticks = time.time()
@@ -220,12 +225,64 @@ class gpsr():
 
     def set_volume(self, volume):
         self.TextToSpe.setParameter(volume)
+
+    def stop_motion(self):
+        self.cancel_plan()
+        self.set_velocity(0, 0, 0)
+
+    def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
+        # if duration > 0 : stop after duration(sec)
+        tt = Twist()
+        tt.linear.x = x
+        tt.linear.y = y
+        tt.angular.z = theta
+        self.cmd_vel_pub.publish(tt)
+        if duration < 0: return None
+        tic = time.time()
+        while time.time() - tic < duration:
+            self.cmd_vel_pub.publish(tt)
+            time.sleep(0.1)
+        tt = Twist()
+        tt.linear.x = 0
+        tt.linear.y = 0
+        tt.angular.z = 0
+        self.cmd_vel_pub.publish(tt)
+
+    def keyboard_control(self):
+        print('\033[0;32m [Kamerider I] Start keyboard control \033[0m')
+        command = ''
+        while command != 'c':
+            try:
+                command = raw_input('next command : ')
+                if command == 'st':
+                    self.start()
+                elif command == 'w':
+                    self.set_velocity(0.25, 0, 0)
+                elif command == 's':
+                    self.stop_motion()
+                elif command == 'x':
+                    self.set_velocity(-0.25, 0, 0)
+                elif command == 'a':
+                    self.set_velocity(0, 0.25, 0)
+                elif command == 'd':
+                    self.set_velocity(0, -0.25, 0)
+                elif command == 'q':
+                    self.set_velocity(0, 0, 0.35)
+                elif command == 'e':
+                    self.set_velocity(0, 0, -0.35)
+                elif command == 'c':
+                    break
+                else:
+                    print("Invalid Command!")
+            except EOFError:
+                print "Error!!"
 def main():
     params = {
         'ip' : "192.168.3.222",
         'port' : 9559
     }
-    pepper_gpsp = gpsr(params)
+    pepper_gpsr = gpsr(params)
+    pepper_gpsr.keyboard_control()
 
 if __name__ == '__main__':
     main()

@@ -4,8 +4,12 @@ import qi
 import os
 import re
 import time
+import cv2
+import dlib
 import rospy
+import numpy as np
 import thread
+import vision_definitions
 import atexit
 import actionlib
 from threading import Thread
@@ -38,6 +42,7 @@ class speech_person_recog():
         self.Memory = self.session.service("ALMemory")
         self.Dialog = self.session.service("ALDialog")
         self.Motion = self.session.service("ALMotion")
+        self.VideoDev = self.session.service("ALVideoDevice")
         self.AudioDev = self.session.service("ALAudioDevice")
         self.AudioPla = self.session.service("ALAudioPlayer")
         self.PhotoCap = self.session.service("ALPhotoCapture")
@@ -52,7 +57,7 @@ class speech_person_recog():
         try:
             self.AudioRec.stopMicrophonesRecording()
         except BaseException:
-            print("\033[0;32;40m\t[Kamerider W]ALFaceCharacteristics : You don't need stop record\033[0m")
+            print("\033[0;33m\t[Kamerider W]ALFaceCharacteristics : You don't need stop record\033[0m")
         # 录音的函数
         self.thread_recording = Thread(target=self.record_audio, args=(None,))
         self.thread_recording.daemon = True
@@ -78,6 +83,7 @@ class speech_person_recog():
                          "Face/Led/Green/Left/270Deg/Actuator/Value", "Face/Led/Green/Left/315Deg/Actuator/Value"]
         self.Leds.createGroup("MyGroup", self.led_name)
         # 声明一些变量
+        self.detector = dlib.get_frontal_face_detector()
         self.current_person_name = "none"
         self.current_drink_name = []
         self.gender = "none"
@@ -87,7 +93,7 @@ class speech_person_recog():
         self.name_list = ["Jack", "Jerry", "Tom"]
         self.drink_list = ["apple juice", "wine", "beer"]
         self.stop_list = ["stop", "go back"]
-        self.angle = -.25
+        self.angle = -0.5
         self.head_fix = True
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_party.txt")
@@ -139,7 +145,6 @@ class speech_person_recog():
 
     def start_head_fix(self):
         arg = tuple([1])
-        self.state = True
         thread.start_new_thread(self.head_fix_thread, arg)
 
     def show_person_image(self):
@@ -213,14 +218,6 @@ class speech_person_recog():
 
     def analyze_content(self):
         # print "1", self.recog_result
-        #print "analyze_content"
-        # 包含停止
-        for i in range(len(self.stop_list)):
-            if re.search(self.stop_list[i].lower(), self.recog_result) != None:
-                self.recog_result = "00"
-                # 记下当前人的名字
-                self.TextToSpe.say("")
-                return "STOP"
         # 包含姓名
         for i in range(len(self.name_list)):
             if re.search(self.name_list[i].lower(), self.recog_result) != None:
@@ -413,6 +410,91 @@ class speech_person_recog():
             self.audio_terminate = True
             self.if_need_record = False
 
+    def get_image(self):
+        AL_kQVGA = 1
+        # Need to add All color space variables
+        AL_kRGBColorSpace = 13
+        fps = 60
+        nameId = self.VideoDev.subscribe("python_GVMa"+str(time.time()), AL_kQVGA, AL_kRGBColorSpace, fps)
+        # create image
+        width = 320
+        height = 240
+        image = np.zeros((height, width, 3), np.uint8)
+        for i in range(0, 30):
+            result = self.VideoDev.getImageRemote(nameId)
+            if result == None:
+                print 'cannot capture.'
+            elif result[6] == None:
+                print 'no image data string.'
+            else:
+                values = map(ord, list(str(bytearray(result[6]))))
+                i = 0
+                for y in range(0, height):
+                    for x in range(0, width):
+                        image.itemset((y, x, 0), values[i + 0])
+                        image.itemset((y, x, 1), values[i + 1])
+                        image.itemset((y, x, 2), values[i + 2])
+                        i += 3
+                # print image
+                cv2.imshow("pepper-top-camera-640*480px", image)
+                cv2.waitKey(1)
+                self.wave_detection(image)
+
+    def wave_detection(self, frame):
+        print "9999"
+        frame_copy = frame.copy()
+        rects = self.detector(frame_copy, 2)
+        if len(rects) != 0:
+            print "yyyyyyyyyyy"
+            for rect in rects:
+                cv2.rectangle(frame_copy, (int((2 * rect.left() - rect.right()) / 1.05), int(rect.top() / 1.2)),
+                              (rect.left(), int(rect.bottom() * 1.05)), (0, 0, 255), 2, 8)
+                cv2.imshow("yess", frame_copy)
+                cv2.waitKey(1)
+                frame = frame_copy[int(rect.top() / 1.2) : int(rect.bottom() * 1.05),
+                        int((2 * rect.left() - rect.right()) / 1.05) : rect.left()]
+                blur = cv2.blur(frame, (3, 3))
+                try:
+                    hsv = cv2.cvtColor(blur,cv2.COLOR_BGR2HSV)
+                except:
+                    continue
+                mask2 = cv2.inRange(hsv, np.array([2, 50, 50]), np.array([15, 255, 255]))
+                cv2.imshow("mask2", mask2)
+                cv2.waitKey(1)
+
+                kernel_square = np.ones((11, 11), np.uint8)
+                kernel_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+                dilation = cv2.dilate(mask2, kernel_ellipse, iterations=1)
+                erosion = cv2.erode(dilation, kernel_square, iterations=1)
+                dilation2 = cv2.dilate(erosion, kernel_ellipse, iterations=1)
+                filtered = cv2.medianBlur(dilation2, 5)
+                kernel_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
+                dilation2 = cv2.dilate(filtered, kernel_ellipse, iterations=1)
+                kernel_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+                dilation3 = cv2.dilate(filtered, kernel_ellipse, iterations=1)
+                median = cv2.medianBlur(dilation2, 5)
+                _, thresh = cv2.threshold(median, 127, 255, 0)
+
+                cv2.imshow('Dilation1', median)
+                cv2.waitKey(1)
+                height, width = median.shape
+                num_white = num_sum = 0
+                for i in range(height):
+                    for j in range(width):
+                        # print median[i, j]
+                        if median[i, j] == 255:
+                            num_white += 1
+                        num_sum += 1
+                print "==================", float(num_white) / float(num_sum)
+                if float(num_white) / float(num_sum) <= 0.2:
+                    print "iiiiiiiiiiiiiii"
+                    continue
+                else:
+                    self.TextToSpe.say("hey, you are waving your hand")
+
+
+
+
     def go_to_waypoint(self, Point, destination, label="none"): # Point代表目标点 destination代表目标点的文本 label
         self.angle = .1
         self.nav_as.send_goal(Point)
@@ -451,6 +533,8 @@ class speech_person_recog():
                     self.set_velocity(0, 0, 0.35)
                 elif command == 'e':
                     self.set_velocity(0, 0, -0.35)
+                elif command == 'get':
+                    self.get_image()
                 elif command == 'c':
                     break
                 elif command == 'dwp':
@@ -459,8 +543,9 @@ class speech_person_recog():
                     self.take_picture()
                 else:
                     print("Invalid Command!")
-            except EOFError:
-                print "Error!!"
+            except Exception as e:
+                print e
+
 
 if __name__ == "__main__":
     params = {

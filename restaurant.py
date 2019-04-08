@@ -4,6 +4,7 @@ import qi
 import os
 import re
 import sys
+import cv2
 import time
 import rospy
 import atexit
@@ -19,44 +20,34 @@ from std_srvs.srv import Empty
 from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
 from actionlib_msgs.msg import GoalID
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from sensor_msgs.msg import LaserScan
 
-class help_me_carry():
-
+class restaurant():
     def __init__(self, params):
-        # 初始化ROS节点
-        rospy.init_node("help_me_carry")
-        # 退出程序的时候进入__del__函数
+        rospy.init_node("restaurant")
         atexit.register(self.__del__)
-        # 初始化pepper的ip和port
         self.ip = params["ip"]
         self.port = params["port"]
         self.session = qi.Session()
-        # 尝试连接pepper
         try:
             self.session.connect("tcp://" + self.ip + ":" + str(self.port))
         except RuntimeError:
             print("[Kamerider E] : connection Error!!")
             sys.exit(1)
-        #    需要使用的naoqi api
-        self.Leds = self.session.service("ALLeds")
-        self.Memory = self.session.service("ALMemory")
-        #self.Dialog = self.session.service("ALDialog")
-        self.Motion = self.session.service("ALMotion")
-        self.Tracker = self.session.service("ALTracker")
-        self.VideoDev = self.session.service("ALVideoDevice")
-        self.AudioDev = self.session.service("ALAudioDevice")
-        self.AudioPla = self.session.service("ALAudioPlayer")
-        self.RobotPos = self.session.service("ALRobotPosture")
-        self.AudioRec = self.session.service("ALAudioRecorder")
-        self.TextToSpe = self.session.service("ALTextToSpeech")
+
         self.BasicAwa = self.session.service("ALBasicAwareness")
         self.TabletSer = self.session.service("ALTabletService")
-        self.SoundDet = self.session.service("ALSoundDetection")
-        self.AnimatedSpe = self.session.service("ALAnimatedSpeech")
+        self.Motion = self.session.service("ALMotion")
         self.AutonomousLife = self.session.service("ALAutonomousLife")
 
-
-        # 停止录音
+        self.Leds = self.session.service("ALLeds")
+        self.Memory = self.session.service("ALMemory")
+        self.RobotPos = self.session.service("ALRobotPosture")
+        self.AudioPla = self.session.service("ALAudioPlayer")
+        self.TextToSpe = self.session.service("ALTextToSpeech")
+        self.AudioRec = self.session.service("ALAudioRecorder")
+        self.SoundDet = self.session.service("ALSoundDetection")
+        bg_model = cv2.BackgroundSubtractorMOG2(0 ,10)
         try:
             self.AudioRec.stopMicrophonesRecording()
         except BaseException:
@@ -76,10 +67,16 @@ class help_me_carry():
         # amcl定位
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         # 声明一些变量
+        self.scan_msg = []
+        self.scan_msg_time = 0
         self.angle = 0.5
-        self.if_ask_time = False
+        self.f = open('./laser.txt', 'w')
         self.if_need_record = False
-        self.point_dataset = self.load_waypoint("waypoints_help.txt")
+        self.head_fix = True
+        self.bar_location = "none"
+        self.point_dataset = self.load_waypoint("waypoints_tour_guide.txt")
+        # 设置英语
+        self.TextToSpe.setLanguage("English")
         #    LED的group
         self.led_name = ["Face/Led/Blue/Right/0Deg/Actuator/Value", "Face/Led/Blue/Right/45Deg/Actuator/Value",
                          "Face/Led/Blue/Right/90Deg/Actuator/Value", "Face/Led/Blue/Right/135Deg/Actuator/Value",
@@ -98,18 +95,6 @@ class help_me_carry():
         # 初始化平板
         self.TabletSer.cleanWebview()
         print ('\033[0;32m [Kamerider I] Tablet initialize successfully \033[0m')
-
-        # 初始化关键字
-        self.start = ["follow", "following", "start", "follow me"]
-        self.stop = ["stop", "here is the car"]
-        self.go_back = ["bathroom", "living room", "bedroom", "kitchen", "toilet"]
-        # 当前时间戳（订阅相机的名字，每个只能使用6次）
-        ticks = time.time()
-
-        # 0代表top相机 最后一个参数是fps
-        self.VideoDev.subscribeCamera(str(ticks), 0, 2, 11, 40)
-        # 设置dialog语言
-        #self.Dialog.setLanguage("English")
         # 录下的音频保存的路径
         self.audio_path = '/home/nao/audio/record.wav'
         self.recog_result = "None"
@@ -124,8 +109,6 @@ class help_me_carry():
         if self.AutonomousLife.getState() != "disabled":
             self.AutonomousLife.setState("disabled")
         self.RobotPos.goToPosture("Stand", .5)
-        # follow me function
-        self.pepper_follow_me = pepper_follow.follow_me(self.session)
         # 初始化录音
         self.record_delay = 2
         self.speech_hints = []
@@ -137,92 +120,86 @@ class help_me_carry():
         # 调用成员函数
         self.start_head_fix()
         self.set_volume(.7)
-        self.keyboard_control()
 
     def __del__(self):
         print ('\033[0;32m [Kamerider I] System Shutting Down... \033[0m')
-        self.AudioRec.stopMicrophonesRecording()
-        self.Tracker.stopTracker()
-        self.Tracker.unregisterAllTargets()
-
-    def start_head_fix(self):
-        arg = tuple([1])
-        self.state = True
-        self.head_fix = True
-        thread.start_new_thread(self.head_fix_thread, arg)
 
     def callback_sound_det(self, msg):
-        print ('\033[0;32m [Kamerider I] Sound detected (In callback function) \033[0m')
-        ox = 0
-        for i in range(len(msg)):
-            if msg[i][1] == 1:
-                ox = 1
-        if ox == 1 and self.enable_speech_recog:
-            self.record_time = time.time() + self.record_delay
-            print "self.record_time += 2s ... ", self.record_time
-            if not self.thread_recording.is_alive():
-                self.start_recording(reset=True)
-            while self.recog_result == "None":
-                time.sleep(1)
-                continue
-            self.analyze_content()
+        if self.if_need_record:
+            print ('\033[0;32m [Kamerider I] Sound detected (In callback function) \033[0m')
+            ox = 0
+            for i in range(len(msg)):
+                if msg[i][1] == 1:
+                    ox = 1
+            if ox == 1 and self.enable_speech_recog:
+                self.record_time = time.time() + self.record_delay
+                print "self.record_time += 3s ... ", self.record_time
+                #if not self.thread_recording.is_alive():
+                #    self.start_recording(reset=True)
+                while self.recog_result == "00":
+                    time.sleep(1)
+                    continue
+            else:
+                return None
         else:
-            return None
+            print ('\033[0;32m [Kamerider I] Sound detected, but we don\'t need to record this audio \033[0m')
+
+    def set_volume(self, volume):
+        self.TextToSpe.setVolume(volume)
 
     def start_recording(self, reset=False, base_duration=3, withBeep=True):
         self.if_need_record = True
+        self.record_time = time.time() + base_duration
         if reset:
             self.kill_recording_thread()
-            self.if_need_record = True
             self.AudioRec.stopMicrophonesRecording()
-            self.record_time = time.time() + base_duration
         print "self.record_time is:  ", self.record_time
         if not self.thread_recording.is_alive():
             self.thread_recording = Thread(target=self.record_audio, args=(self.speech_hints, withBeep))
             self.thread_recording.daemon = False
-            self.if_need_record = True
             self.thread_recording.start()
             self.thread_recording.join()
             print('\033[0;32m [Kamerider I] Start recording thread \033[0m')
 
-    def analyze_content(self):
-        for i in range(len(self.start)):
-            if re.search(self.start[i].lower(), self.recog_result) != None:
-                self.recog_result = "None"
-                self.TextToSpe.say("I will start following you")
-                print('\033[0;32m [Kamerider I] start following the operator \033[0m')
-                self.thread_recording.join()
-                # start follow function
-                self.pepper_follow_me.start_follow()
-                return
-        for i in range(len(self.go_back)):
-            if re.search(self.go_back[i], self.recog_result) != None:
-                self.recog_result = "None"
-                print('\033[0;32m [Kamerider I] Start navigating to ' + self.go_back[i] + '  \033[0m')
-                self.kill_recording_thread()
-                # navigation function
-                self.TextToSpe.say("I'm going to the kitchen")
-                self.go_to_waypoint(self.point_dataset[self.go_back[i]], self.go_back[i], label="go_back")
-                # 调整头部的角度
-                self.angle = -.4
-                self.face_dete()
-                return
-        for i in range(len(self.stop)):
-            if re.search(self.stop[i], self.recog_result) != None:
-                self.recog_result = "None"
-                self.TextToSpe.say("I will stop following you")
-                print('\033[0;32m [Kamerider I] Stop following the person  \033[0m')
-                # 记住车的位置
-                self.get_car_position()
-                self.TextToSpe.say("I have memorized the location of the car")
-                self.thread_recording.join()
-                self.pepper_follow_me.stop_follow()
-                return
+    def start(self):
+        #print "start"
+        # 检测吧台
+        self.scan_sub = rospy.Subscriber('/pepper_robot/laser', LaserScan, self.scan_callback)
+        while self.bar_location == "none":
+            if self.scan_msg_time == 4:
+                time_left = time_right = 0
+                sum_left = sum_right = 0
+                for i in range(4):
+                    for j in range(15):
+                        sum_right += self.scan_msg[i].ranges[j]
+                    for j in range(15):
+                        sum_left += self.scan_msg[i].ranges[j + 31]
+                    if sum_right < sum_left:
+                        time_right += 1
+                    else:
+                        time_left += 1
+                if time_right > time_left:
+                    self.bar_location = "right"
+                    print "right"
+                else:
+                    self.bar_location = "left"
+                    print "left"
+        self.TextToSpe.say("The bar table is on the " + self.bar_location)
+        self.TextToSpe.say("I am going to find the guest")
+        # find guest function
 
-    def kill_recording_thread(self):
-        if self.thread_recording.is_alive():
-            self.audio_terminate = True
-            self.if_need_record = False
+
+    def head_fix_thread(self, arg):
+        self.Motion.setStiffnesses("head", 1.0)
+        while True:
+            if self.head_fix:
+                #print "=====self.angle:====", self.angle
+                self.Motion.setAngles("Head", [0., self.angle], .2)
+            time.sleep(3)
+
+    def start_head_fix(self):
+        arg = tuple([1])
+        thread.start_new_thread(self.head_fix_thread, arg)
 
     def record_audio(self, hints, withBeep = True):
         print "================================================"
@@ -256,43 +233,6 @@ class help_me_carry():
             print('\033[0;32m [Kamerider I] Record ended start recognizing \033[0m')
             self.recog_result = speech_recognition_text.main("./audio_record/recog.wav").lower()
 
-    def head_fix_thread(self, arg):
-        while self.head_fix:
-            self.Motion.setStiffnesses("head", 1.0)
-            self.Motion.setAngles("Head", [0., self.angle], .05)
-            time.sleep(2)
-
-    def show_person_image(self):
-        cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":./person_image/person_image.png ~/.local/share/PackageManager/apps/boot-config/html"
-        os.system(cmd)
-        self.TabletSer.hideImage()
-        self.TabletSer.showImage("http://198.18.0.1/apps/boot-config/person_image.png")
-
-    def face_dete(self):
-        # face detection函数
-        self.face = face_dete.face_dete_control(self.session)
-        self.face.start_face_dete()
-        self.go_to_waypoint(self.point_dataset["car"], "car", label="car")
-
-    def get_car_position(self):
-        curr_pos = PoseStamped()
-        car_position = MoveBaseGoal()
-        car_position.target_pose.header.frame_id = '/map'
-        car_position.target_pose.header.stamp = curr_pos.header.stamp
-        car_position.target_pose.header.seq = curr_pos.header.seq
-        car_position.target_pose.pose.position.x = self.car_pose.pose.pose.position.x
-        car_position.target_pose.pose.position.y = self.car_pose.pose.pose.position.y
-        car_position.target_pose.pose.position.z = self.car_pose.pose.pose.position.z
-        car_position.target_pose.pose.orientation.x = self.car_pose.pose.pose.orientation.x
-        car_position.target_pose.pose.orientation.y = self.car_pose.pose.pose.orientation.y
-        car_position.target_pose.pose.orientation.z = self.car_pose.pose.pose.orientation.z
-        car_position.target_pose.pose.orientation.w = self.car_pose.pose.pose.orientation.w
-        self.point_dataset["car"] = car_position
-        print self.point_dataset["car"]
-
-    def amcl_callback(self, msg):
-        self.car_pose= msg
-
     def load_waypoint(self, file_name):
         curr_pos = PoseStamped()
         f = open(file_name, 'r')
@@ -319,53 +259,22 @@ class help_me_carry():
         print ('\033[0;32m [Kamerider I] Points Loaded! \033[0m')
         return dataset_points
 
-    def set_volume(self, volume):
-        self.TextToSpe.setVolume(volume)
+    def analyze_content(self):
+        print "analyze_content"
 
-    def go_to_waypoint(self, Point, destination, label):
-        self.angle = .1
-        self.nav_as.send_goal(Point)
-        self.map_clear_srv()
-        count_time = 0
-        # 等于3的时候就是到达目的地了
-        while self.nav_as.get_state() != 3:
-            count_time += 1
-            time.sleep(1)
-            # 如果有人问时间了
-            if self.if_ask_time:
-                # 测试是不是取消导航
-                self.goal_cancel_pub.publish(GoalID())
-                # %y 两位数的年份表示（00-99）%Y 四位数的年份表示（000-9999）%m 月份（01-12）
-                # %d 月内中的一天（0-31）%H 24小时制小时数（0-23）%I 12小时制小时数（01-12）
-                # %M 分钟数（00=59）%S 秒（00-59）
-                current_time = time.strftime('%H:%M',time.localtime(time.time())).split(":")
-                sentence = "The time is " + current_time[0] + " " + current_time[1]
-                print('\033[0;32m [Kamerider I] ' + sentence + ' \033[0m')
-                self.TextToSpe.say(sentence)
-                sentence = "Excuse me, I need to go to the " + destination + ", Please let me go"
-                self.TextToSpe.say(sentence)
-                sentence = "Thank you"
-                time.sleep(2)
-                self.TextToSpe.say(sentence)
-                time.sleep(2)
-                self.if_ask_time = False
-                self.map_clear_srv()
-                self.nav_as.send_goal(Point)
-                # 每隔4s清除一次local map
-            if count_time == 3:
-                self.map_clear_srv()
-                count_time = 0
-        if label == "go_back":
-            print('\033[0;32m [Kamerider I] I have arrived at ' + destination + ', start looking for people \033[0m')
-            self.TextToSpe.say("I have arrived at " + destination)
-            # find person function
-        elif label == "car":
-            self.TextToSpe.say("I have arrived the car position.")
-            self.TextToSpe.say("Mission succeeded")
-            self.__del__()
+    def scan_callback(self, msg):
+        self.scan_msg.append(msg)
+        self.scan_msg_time += 1
+        if self.scan_msg_time == 4:
+            self.scan_sub.unregister()
 
-    def cancel_plan(self):
-        self.goal_cancel_pub.publish(GoalID())
+    def amcl_callback(self, msg):
+        self.car_pose= msg
+
+    def kill_recording_thread(self):
+        if self.thread_recording.is_alive():
+            self.audio_terminate = True
+            self.if_need_record = False
 
     def stop_motion(self):
         self.cancel_plan()
@@ -395,7 +304,9 @@ class help_me_carry():
         while command != 'c':
             try:
                 command = raw_input('next command : ')
-                if command == 'w':
+                if command == 'st':
+                    self.start()
+                elif command == 'w':
                     self.set_velocity(0.25, 0, 0)
                 elif command == 's':
                     self.stop_motion()
@@ -409,28 +320,24 @@ class help_me_carry():
                     self.set_velocity(0, 0, 0.35)
                 elif command == 'e':
                     self.set_velocity(0, 0, -0.35)
-                elif command == 'qq':
-                    self.set_velocity(0, 0, 1)
-                elif command == 'ee':
-                    self.set_velocity(0, 0, -1)
-                elif command == 'gc':
-                    self.get_car_position()
-                elif command == 'sr':
-                    self.start_record()
+                elif command == "st":
+                    self.start()
                 elif command == 'c':
-                    self.cancel_plan(); self.set_velocity(0, 0, 0); break
+                    break
                 else:
                     print("Invalid Command!")
-            except EOFError:
-                print "Error!!"
+            except Exception as e:
+                print e
 
-def main():
-    params = {
-        'ip' : "192.168.3.18",
-        'port' : 9559,
-        'rgb_topic' : 'pepper_robot/camera/front/image_raw'
-    }
-    help_me_carry(params)
+        self.f.close()
 
 if __name__ == "__main__":
-    main()
+    params = {
+        'ip': "192.168.3.18",
+        'port': 9559
+    }
+    res = restaurant(params)
+    res.keyboard_control()
+
+
+
