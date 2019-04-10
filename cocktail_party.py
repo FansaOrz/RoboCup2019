@@ -83,6 +83,8 @@ class speech_person_recog():
                          "Face/Led/Green/Left/270Deg/Actuator/Value", "Face/Led/Green/Left/315Deg/Actuator/Value"]
         self.Leds.createGroup("MyGroup", self.led_name)
         # 声明一些变量
+        self.stop_time = 0 #在每一个人前面停留的次数，检测这个人是否在挥手
+        self.get_image_switch = True
         self.detector = dlib.get_frontal_face_detector()
         self.current_person_name = "none"
         self.current_drink_name = []
@@ -120,9 +122,6 @@ class speech_person_recog():
         print "getPostureFamilyList", self.RobotPos.getPostureFamilyList()
         # Beep 音量
         self.beep_volume = 70
-        # 设置初始化头的位置 走路的时候固定头的位置
-        #self.Motion.setStiffnesses("Head", 1.0)
-        #self.Motion.setAngles("Head", [0., -0.25], .05)
         # 设置说话速度
         self.TextToSpe.setParameter("speed", 75.0)
         # 初始化录音
@@ -321,7 +320,8 @@ class speech_person_recog():
     def start(self):
         self.go_to_waypoint(self.point_dataset["cocktail_party_room"], "cocktail_party_room", "first")
         # find people
-        # TODO
+        self.angle = -0.2
+        self.find_person()
         # start dialog
         self.dialog_with_people()
 
@@ -410,17 +410,17 @@ class speech_person_recog():
             self.audio_terminate = True
             self.if_need_record = False
 
-    def get_image(self):
+    def find_person(self):
         AL_kQVGA = 1
         # Need to add All color space variables
         AL_kRGBColorSpace = 13
         fps = 60
-        nameId = self.VideoDev.subscribe("python_GVMa"+str(time.time()), AL_kQVGA, AL_kRGBColorSpace, fps)
+        nameId = self.VideoDev.subscribe("image"+str(time.time()), AL_kQVGA, AL_kRGBColorSpace, fps)
         # create image
         width = 320
         height = 240
         image = np.zeros((height, width, 3), np.uint8)
-        for i in range(0, 30):
+        while self.get_image_switch:
             result = self.VideoDev.getImageRemote(nameId)
             if result == None:
                 print 'cannot capture.'
@@ -447,12 +447,12 @@ class speech_person_recog():
         if len(rects) != 0:
             print "yyyyyyyyyyy"
             for rect in rects:
-                cv2.rectangle(frame_copy, (int((2 * rect.left() - rect.right()) / 1.05), int(rect.top() / 1.2)),
+                cv2.rectangle(frame_copy, (int((5/2) * rect.left() - (3/2)*rect.right()), int(rect.top() / 1.2)),
                               (rect.left(), int(rect.bottom() * 1.05)), (0, 0, 255), 2, 8)
                 cv2.imshow("yess", frame_copy)
                 cv2.waitKey(1)
                 frame = frame_copy[int(rect.top() / 1.2) : int(rect.bottom() * 1.05),
-                        int((2 * rect.left() - rect.right()) / 1.05) : rect.left()]
+                        int((5/2) * rect.left() - (3/2)*rect.right()) : rect.left()]
                 blur = cv2.blur(frame, (3, 3))
                 try:
                     hsv = cv2.cvtColor(blur,cv2.COLOR_BGR2HSV)
@@ -485,15 +485,33 @@ class speech_person_recog():
                         if median[i, j] == 255:
                             num_white += 1
                         num_sum += 1
-                print "==================", float(num_white) / float(num_sum)
-                if float(num_white) / float(num_sum) <= 0.2:
-                    print "iiiiiiiiiiiiiii"
-                    continue
+                # print "==================", float(num_white) / float(num_sum)
+                if float(num_white) / float(num_sum) <= 0.1:
+                    self.stop_time += 1
+                    if self.stop_time <= 4:
+                        continue
+                    else:
+                        self.stop_time = 0
+                        self.set_velocity(0, 0, -0.2, duration=1)
+                        print "turn left times:"
                 else:
-                    self.TextToSpe.say("hey, you are waving your hand")
+                    # self.TextToSpe.say("hey, you are waving your hand")
+                    left_right_center = int((rect.left() + rect.right()) / 2)
+                    # top_bottom_center = int((rect.top() + rect.bottom()) / 2)
+                    if left_right_center > 190:
+                        self.set_velocity(0, 0, -0.1, duration=1)
+                    elif left_right_center < 130:
+                        self.set_velocity(0, 0, -0.1, duration=1)
+                    else:
+                        self.set_velocity(0.1, 0, 0, duration=1)
+                    # print "-------------------------------------"
+                    if (rect.bottom() - rect.top()) * (rect.right() - rect.left()) > 1400:
+                        self.get_image_switch = False
+                        self.say("I have found you.")
+        else:
+            self.set_velocity(0, 0, -0.2, duration=1)
 
-
-
+            print "turn left times:"
 
     def go_to_waypoint(self, Point, destination, label="none"): # Point代表目标点 destination代表目标点的文本 label
         self.angle = .1
@@ -534,7 +552,7 @@ class speech_person_recog():
                 elif command == 'e':
                     self.set_velocity(0, 0, -0.35)
                 elif command == 'get':
-                    self.get_image()
+                    self.find_person()
                 elif command == 'c':
                     break
                 elif command == 'dwp':

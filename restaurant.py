@@ -277,7 +277,7 @@ class restaurant():
             self.if_need_record = False
 
     def stop_motion(self):
-        self.cancel_plan()
+        # self.cancel_plan()
         self.set_velocity(0, 0, 0)
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
