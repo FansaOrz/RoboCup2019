@@ -3,18 +3,18 @@
 import qi
 import os
 import re
-import time
 import cv2
-import dlib
+import time
 import rospy
-import numpy as np
 import thread
-import vision_definitions
 import atexit
 import actionlib
+import numpy as np
+import vision_definitions
 from threading import Thread
 from std_srvs.srv import Empty
 from actionlib_msgs.msg import GoalID
+from wave_detection import opencv_wave
 from gender_predict import baidu_gender
 from speech_recog import speech_recognition_text
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -42,7 +42,6 @@ class speech_person_recog():
         self.Memory = self.session.service("ALMemory")
         self.Dialog = self.session.service("ALDialog")
         self.Motion = self.session.service("ALMotion")
-        self.VideoDev = self.session.service("ALVideoDevice")
         self.AudioDev = self.session.service("ALAudioDevice")
         self.AudioPla = self.session.service("ALAudioPlayer")
         self.PhotoCap = self.session.service("ALPhotoCapture")
@@ -71,7 +70,7 @@ class speech_person_recog():
         self.map_clear_srv = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
         self.map_clear_srv()
         # amcl定位
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
+        # rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         #    LED的group
         self.led_name = ["Face/Led/Green/Right/0Deg/Actuator/Value", "Face/Led/Green/Right/45Deg/Actuator/Value",
                          "Face/Led/Green/Right/90Deg/Actuator/Value", "Face/Led/Green/Right/135Deg/Actuator/Value",
@@ -83,9 +82,7 @@ class speech_person_recog():
                          "Face/Led/Green/Left/270Deg/Actuator/Value", "Face/Led/Green/Left/315Deg/Actuator/Value"]
         self.Leds.createGroup("MyGroup", self.led_name)
         # 声明一些变量
-        self.stop_time = 0 #在每一个人前面停留的次数，检测这个人是否在挥手
         self.get_image_switch = True
-        self.detector = dlib.get_frontal_face_detector()
         self.current_person_name = "none"
         self.current_drink_name = []
         self.gender = "none"
@@ -95,7 +92,7 @@ class speech_person_recog():
         self.name_list = ["Jack", "Jerry", "Tom"]
         self.drink_list = ["apple juice", "wine", "beer"]
         self.stop_list = ["stop", "go back"]
-        self.angle = -0.5
+        self.angle = -0.4
         self.head_fix = True
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_party.txt")
@@ -141,6 +138,7 @@ class speech_person_recog():
     def __del__(self):
         print ('\033[0;32m [Kamerider I] System Shutting Down... \033[0m')
         self.AudioRec.stopMicrophonesRecording()
+        cv2.destroyAllWindows()
 
     def start_head_fix(self):
         arg = tuple([1])
@@ -163,8 +161,8 @@ class speech_person_recog():
     def say(self, text):
         self.TextToSpe.say(text)
 
-    def amcl_callback(self, msg):
-        self.car_pose= msg
+    # def amcl_callback(self, msg):
+    #     self.car_pose= msg
 
     def load_waypoint(self, file_name):
         curr_pos = PoseStamped()
@@ -326,7 +324,7 @@ class speech_person_recog():
         self.dialog_with_people()
 
     def stop_motion(self):
-        self.cancel_plan()
+        self.goal_cancel_pub.publish(GoalID())
         self.set_velocity(0, 0, 0)
 
     def dialog_with_people(self):
@@ -389,7 +387,7 @@ class speech_person_recog():
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
         # if duration > 0 : stop after duration(sec)
-        tt = Twist()
+        tt = Twist()getStructuringElement
         tt.linear.x = x
         tt.linear.y = y
         tt.angular.z = theta
@@ -411,107 +409,8 @@ class speech_person_recog():
             self.if_need_record = False
 
     def find_person(self):
-        AL_kQVGA = 1
-        # Need to add All color space variables
-        AL_kRGBColorSpace = 13
-        fps = 60
-        nameId = self.VideoDev.subscribe("image"+str(time.time()), AL_kQVGA, AL_kRGBColorSpace, fps)
-        # create image
-        width = 320
-        height = 240
-        image = np.zeros((height, width, 3), np.uint8)
-        while self.get_image_switch:
-            result = self.VideoDev.getImageRemote(nameId)
-            if result == None:
-                print 'cannot capture.'
-            elif result[6] == None:
-                print 'no image data string.'
-            else:
-                values = map(ord, list(str(bytearray(result[6]))))
-                i = 0
-                for y in range(0, height):
-                    for x in range(0, width):
-                        image.itemset((y, x, 0), values[i + 0])
-                        image.itemset((y, x, 1), values[i + 1])
-                        image.itemset((y, x, 2), values[i + 2])
-                        i += 3
-                # print image
-                cv2.imshow("pepper-top-camera-640*480px", image)
-                cv2.waitKey(1)
-                self.wave_detection(image)
-
-    def wave_detection(self, frame):
-        print "9999"
-        frame_copy = frame.copy()
-        rects = self.detector(frame_copy, 2)
-        if len(rects) != 0:
-            print "yyyyyyyyyyy"
-            for rect in rects:
-                cv2.rectangle(frame_copy, (int((5/2) * rect.left() - (3/2)*rect.right()), int(rect.top() / 1.2)),
-                              (rect.left(), int(rect.bottom() * 1.05)), (0, 0, 255), 2, 8)
-                cv2.imshow("yess", frame_copy)
-                cv2.waitKey(1)
-                frame = frame_copy[int(rect.top() / 1.2) : int(rect.bottom() * 1.05),
-                        int((5/2) * rect.left() - (3/2)*rect.right()) : rect.left()]
-                blur = cv2.blur(frame, (3, 3))
-                try:
-                    hsv = cv2.cvtColor(blur,cv2.COLOR_BGR2HSV)
-                except:
-                    continue
-                mask2 = cv2.inRange(hsv, np.array([2, 50, 50]), np.array([15, 255, 255]))
-                cv2.imshow("mask2", mask2)
-                cv2.waitKey(1)
-
-                kernel_square = np.ones((11, 11), np.uint8)
-                kernel_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-                dilation = cv2.dilate(mask2, kernel_ellipse, iterations=1)
-                erosion = cv2.erode(dilation, kernel_square, iterations=1)
-                dilation2 = cv2.dilate(erosion, kernel_ellipse, iterations=1)
-                filtered = cv2.medianBlur(dilation2, 5)
-                kernel_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
-                dilation2 = cv2.dilate(filtered, kernel_ellipse, iterations=1)
-                kernel_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-                dilation3 = cv2.dilate(filtered, kernel_ellipse, iterations=1)
-                median = cv2.medianBlur(dilation2, 5)
-                _, thresh = cv2.threshold(median, 127, 255, 0)
-
-                cv2.imshow('Dilation1', median)
-                cv2.waitKey(1)
-                height, width = median.shape
-                num_white = num_sum = 0
-                for i in range(height):
-                    for j in range(width):
-                        # print median[i, j]
-                        if median[i, j] == 255:
-                            num_white += 1
-                        num_sum += 1
-                # print "==================", float(num_white) / float(num_sum)
-                if float(num_white) / float(num_sum) <= 0.1:
-                    self.stop_time += 1
-                    if self.stop_time <= 4:
-                        continue
-                    else:
-                        self.stop_time = 0
-                        self.set_velocity(0, 0, -0.2, duration=1)
-                        print "turn left times:"
-                else:
-                    # self.TextToSpe.say("hey, you are waving your hand")
-                    left_right_center = int((rect.left() + rect.right()) / 2)
-                    # top_bottom_center = int((rect.top() + rect.bottom()) / 2)
-                    if left_right_center > 190:
-                        self.set_velocity(0, 0, -0.1, duration=1)
-                    elif left_right_center < 130:
-                        self.set_velocity(0, 0, -0.1, duration=1)
-                    else:
-                        self.set_velocity(0.1, 0, 0, duration=1)
-                    # print "-------------------------------------"
-                    if (rect.bottom() - rect.top()) * (rect.right() - rect.left()) > 1400:
-                        self.get_image_switch = False
-                        self.say("I have found you.")
-        else:
-            self.set_velocity(0, 0, -0.2, duration=1)
-
-            print "turn left times:"
+        temp = opencv_wave.wave_detection(self.session)
+        temp.find_person()
 
     def go_to_waypoint(self, Point, destination, label="none"): # Point代表目标点 destination代表目标点的文本 label
         self.angle = .1
@@ -552,6 +451,7 @@ class speech_person_recog():
                 elif command == 'e':
                     self.set_velocity(0, 0, -0.35)
                 elif command == 'get':
+                    self.get_image_switch = True
                     self.find_person()
                 elif command == 'c':
                     break

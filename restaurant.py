@@ -17,6 +17,7 @@ from follow import pepper_follow
 from face_dete import face_dete
 from speech_recog import speech_recognition_text
 from std_srvs.srv import Empty
+from wave_detection import opencv_wave
 from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
 from actionlib_msgs.msg import GoalID
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -64,17 +65,18 @@ class restaurant():
         # 清除costmap
         self.map_clear_srv = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
         self.map_clear_srv()
-        # amcl定位
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         # 声明一些变量
+        self.object = ["coke cole", "wine", "beer", "photo chips", "green tea", "water"]
+        self.current_drink_name = []
         self.scan_msg = []
+        self.if_save_switch = True
         self.scan_msg_time = 0
-        self.angle = 0.5
+        self.angle = -.2
         self.f = open('./laser.txt', 'w')
         self.if_need_record = False
         self.head_fix = True
         self.bar_location = "none"
-        self.point_dataset = self.load_waypoint("waypoints_tour_guide.txt")
+        self.point_dataset = []
         # 设置英语
         self.TextToSpe.setLanguage("English")
         #    LED的group
@@ -162,7 +164,7 @@ class restaurant():
             print('\033[0;32m [Kamerider I] Start recording thread \033[0m')
 
     def start(self):
-        #print "start"
+        print "start"
         # 检测吧台
         self.scan_sub = rospy.Subscriber('/pepper_robot/laser', LaserScan, self.scan_callback)
         while self.bar_location == "none":
@@ -170,14 +172,21 @@ class restaurant():
                 time_left = time_right = 0
                 sum_left = sum_right = 0
                 for i in range(4):
-                    for j in range(15):
+                    for j in range(len(self.scan_msg[i].ranges)):
+                        print "-----------"
+                        print j, self.scan_msg[i].ranges[j]
+                    for j in range(11):
                         sum_right += self.scan_msg[i].ranges[j]
-                    for j in range(15):
-                        sum_left += self.scan_msg[i].ranges[j + 31]
+                        # print "===================right", self.scan_msg[i].ranges[j]
+                    for j in range(47, 56):
+                        sum_left += self.scan_msg[i].ranges[j]
+                        # print "-------------------left", self.scan_msg[i].ranges[j + 31]
                     if sum_right < sum_left:
                         time_right += 1
+                        print "1111111"
                     else:
                         time_left += 1
+                        print "0000000"
                 if time_right > time_left:
                     self.bar_location = "right"
                     print "right"
@@ -185,9 +194,35 @@ class restaurant():
                     self.bar_location = "left"
                     print "left"
         self.TextToSpe.say("The bar table is on the " + self.bar_location)
+        self.save_point()
         self.TextToSpe.say("I am going to find the guest")
-        # find guest function
+        # find guest function 抬头找人
+        self.angle = -.2
+        print "fro"
+        self.find_person()
+        print "qqqq"
+        self.save_point()
+        self.TextToSpe.say("hello, What can I do for you?")
+        self.start_recording(reset=True)
+        self.analyze_content()
+        self.go_to_waypoint(self.point_dataset[0])
+        if len(self.current_drink_name) != 0:
+            self.TextToSpe.say("hey the guest need ")
+            for i in range(len(self.current_drink_name)):
+                self.TextToSpe.say(" " + self.current_drink_name[i])
 
+    def save_point(self):
+        self.if_save_switch = True
+        print "save_point"
+        # amcl定位
+        amcl_sub = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
+        while self.if_save_switch:
+            time.sleep(1)
+        amcl_sub.unregister()
+
+    def find_person(self):
+        temp = opencv_wave.wave_detection(self.session)
+        temp.find_person()
 
     def head_fix_thread(self, arg):
         self.Motion.setStiffnesses("head", 1.0)
@@ -233,48 +268,72 @@ class restaurant():
             print('\033[0;32m [Kamerider I] Record ended start recognizing \033[0m')
             self.recog_result = speech_recognition_text.main("./audio_record/recog.wav").lower()
 
-    def load_waypoint(self, file_name):
-        curr_pos = PoseStamped()
-        f = open(file_name, 'r')
-        sourceInLines = f.readlines()
-        dataset_points = {}
-        for line in sourceInLines:
-            temp1 = line.strip('\n')
-            temp2 = temp1.split(',')
-            point_temp = MoveBaseGoal()
-            point_temp.target_pose.header.frame_id = '/map'
-            point_temp.target_pose.header.stamp = curr_pos.header.stamp
-            point_temp.target_pose.header.seq = curr_pos.header.seq
-            point_temp.target_pose.pose.position.x = float(temp2[1])
-            point_temp.target_pose.pose.position.y = float(temp2[2])
-            point_temp.target_pose.pose.position.z = float(temp2[3])
-            point_temp.target_pose.pose.orientation.x = float(temp2[4])
-            point_temp.target_pose.pose.orientation.y = float(temp2[5])
-            point_temp.target_pose.pose.orientation.z = float(temp2[6])
-            point_temp.target_pose.pose.orientation.w = float(temp2[7])
-            dataset_points[temp2[0]] = point_temp
-        print ("↓↓↓↓↓↓↓↓↓↓↓↓point↓↓↓↓↓↓↓↓↓↓↓↓")
-        print (dataset_points)
-        print ("↑↑↑↑↑↑↑↑↑↑↑↑point↑↑↑↑↑↑↑↑↑↑↑↑")
-        print ('\033[0;32m [Kamerider I] Points Loaded! \033[0m')
-        return dataset_points
-
     def analyze_content(self):
-        print "analyze_content"
+        # include drink
+        self.current_drink_name = []
+        for i in range(len(self.object)):
+            if re.search(self.object[i].lower(), self.recog_result) != None:
+                for j in range(len(self.object)):
+                    if re.search(self.object[j].lower(), self.recog_result) != None:
+                        self.current_drink_name.append(self.object[j])
+                self.recog_result = "00"
+                # 记下当前饮品的名字
+                if self.current_drink_name != []:
+                    self.if_need_record = False
+                    self.TextToSpe.say("Ok, I will take the")
+                    for i in range(len(self.current_drink_name)):
+                        self.TextToSpe.say(" " + self.current_drink_name[i])
+                    self.TextToSpe.say(" to you")
+                return "DRINK"
+        self.TextToSpe.say("sorry, please tell me again")
+        self.start_recording(reset=True)
+        self.analyze_content()
 
     def scan_callback(self, msg):
+        print "in scan callback"
+        print msg
         self.scan_msg.append(msg)
         self.scan_msg_time += 1
         if self.scan_msg_time == 4:
             self.scan_sub.unregister()
 
     def amcl_callback(self, msg):
-        self.car_pose= msg
+        # print "yyyyyyyyy"
+        # print msg
+        # curr_pos = PoseStamped()
+        point_temp = MoveBaseGoal()
+        point_temp.target_pose.header.frame_id = '/map'
+        point_temp.target_pose.header.stamp = msg.header.stamp
+        point_temp.target_pose.header.seq = msg.header.seq
+        point_temp.target_pose.pose.position.x = msg.pose.pose.position.x
+        point_temp.target_pose.pose.position.y = msg.pose.pose.position.y
+        point_temp.target_pose.pose.position.z = msg.pose.pose.position.z
+        point_temp.target_pose.pose.orientation.x = msg.pose.pose.orientation.x
+        point_temp.target_pose.pose.orientation.y = msg.pose.pose.orientation.y
+        point_temp.target_pose.pose.orientation.z = msg.pose.pose.orientation.z
+        point_temp.target_pose.pose.orientation.w = msg.pose.pose.orientation.w
+        self.point_dataset.append(point_temp)
+        print('\033[0;32m [Kamerider I] Point saved successfully!! \033[0m')
+        self.if_save_switch = False
 
     def kill_recording_thread(self):
         if self.thread_recording.is_alive():
             self.audio_terminate = True
             self.if_need_record = False
+
+    def go_to_waypoint(self, Point):
+        self.angle = .1
+        self.nav_as.send_goal(Point)
+        #self.map_clear_srv()
+        count_time = 0
+        # 等于3的时候就是到达目的地了
+        while self.nav_as.get_state() != 3:
+            count_time += 1
+            time.sleep(1)
+            # 每隔4s清除一次local map
+            if count_time == 3:
+                #self.map_clear_srv()
+                count_time = 0
 
     def stop_motion(self):
         # self.cancel_plan()
@@ -320,8 +379,10 @@ class restaurant():
                     self.set_velocity(0, 0, 0.35)
                 elif command == 'e':
                     self.set_velocity(0, 0, -0.35)
-                elif command == "st":
+                elif command == "save":
                     self.start()
+                elif command == "print":
+                    print self.point_dataset
                 elif command == 'c':
                     break
                 else:
