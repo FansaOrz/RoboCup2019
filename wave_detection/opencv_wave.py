@@ -16,24 +16,24 @@ class wave_detection:
         self.TextToSpe = session.service("ALTextToSpeech")
 
         # rospy.init_node("wave_detection")
-        # self.RobotPos = session.service("ALRobotPosture")
-        # self.BasicAwa = session.service("ALBasicAwareness")
-        # self.AutonomousLife = session.service("ALAutonomousLife")
-        # # 关闭basic_awareness
-        # if self.BasicAwa.isEnabled():
-        #     self.BasicAwa.setEnabled(False)
-        # if self.BasicAwa.isRunning():
-        #     self.BasicAwa.pauseAwareness()
-        # # 关闭AutonomousLife模式
-        # if self.AutonomousLife.getState() != "disabled":
-        #     self.AutonomousLife.setState("disabled")
-        # self.RobotPos.goToPosture("StandInit", .2)
+        self.RobotPos = session.service("ALRobotPosture")
+        self.BasicAwa = session.service("ALBasicAwareness")
+        self.AutonomousLife = session.service("ALAutonomousLife")
+        # 关闭basic_awareness
+        if self.BasicAwa.isEnabled():
+            self.BasicAwa.setEnabled(False)
+        if self.BasicAwa.isRunning():
+            self.BasicAwa.pauseAwareness()
+        # 关闭AutonomousLife模式
+        if self.AutonomousLife.getState() != "disabled":
+            self.AutonomousLife.setState("disabled")
+        self.RobotPos.goToPosture("StandInit", .2)
 
 
         self.get_image_switch = True
         self.stop_time = 0 #在每一个人前面停留的次数，检测这个人是否在挥手
         self.turn_right_time = 0
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        # self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.detector = dlib.get_frontal_face_detector()
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
@@ -92,11 +92,11 @@ class wave_detection:
         if len(rects) != 0:
             # print "yyyyyyyyyyy"
             for rect in rects:
-                cv2.rectangle(frame_copy, (int(3 * rect.left() - 2 * rect.right()), int(rect.top() / 1.2)),
-                              (int((4/3) * rect.left() - (2/3) * rect.right()), int(rect.bottom() * 1.05)), (0, 0, 255), 2, 8)
+                cv2.rectangle(frame_copy, (int(3 * rect.left() - 2 * rect.right()), int(rect.top() - (rect.bottom() - rect.top()) / 3)),
+                              (int((4/3) * rect.left() - (2/3) * rect.right()), int(rect.bottom() + (rect.bottom() - rect.top()) * 1.3)), (0, 0, 255), 2, 8)
                 cv2.imshow("yess", frame_copy)
                 cv2.waitKey(1)
-                frame = frame_copy[int(rect.top() / 1.2): int(rect.bottom() * 1.05),
+                frame = frame_copy[int(rect.top() - (rect.bottom() - rect.top()) / 3): int(rect.bottom() + (rect.bottom() - rect.top()) * 1.3),
                         int(3 * rect.left() - 2 * rect.right()): int((4/3) * rect.left() - (2/3) * rect.right())]
                 blur = cv2.blur(frame, (3, 3))
                 try:
@@ -130,7 +130,7 @@ class wave_detection:
                             num_white += 1
                         num_sum += 1
                 print "==================", float(num_white) / float(num_sum)
-                if float(num_white) / float(num_sum) <= 0.5:
+                if float(num_white) / float(num_sum) <= 0.03:
                     self.stop_time += 1
                     if self.stop_time <= 5:
                         continue
@@ -139,7 +139,7 @@ class wave_detection:
                         if self.turn_right_time <= 7:
                             print "self.turn_right_time", self.turn_right_time
                             self.turn_right_time += 1
-                            self.set_velocity(0, 0, -0.2, duration=.7)
+                            # self.set_velocity(0, 0, -0.2, duration=.7)
                         else:
                             self.Motion.move(0, 0, 1)
                             duration = time.time() + 4
@@ -149,38 +149,45 @@ class wave_detection:
                             self.turn_right_time = 0
                         print "turn left times:"
                 else:
+                    self.stop_time = 0
                     # self.TextToSpe.say("hey, you are waving your hand")
                     left_right_center = int((rect.left() + rect.right()) / 2)
                     # top_bottom_center = int((rect.top() + rect.bottom()) / 2)
-                    if left_right_center > 190:
-                        self.set_velocity(0, 0, -0.1, duration=1)
-                    elif left_right_center < 130:
-                        self.set_velocity(0, 0, -0.1, duration=1)
-                    else:
-                        self.set_velocity(0.1, 0, 0, duration=1)
+
+
+
+                    # if left_right_center > 190:
+                    #     self.set_velocity(0, 0, -0.1, duration=1)
+                    # elif left_right_center < 130:
+                    #     self.set_velocity(0, 0, -0.1, duration=1)
+                    # else:
+                    #     self.set_velocity(0.1, 0, 0, duration=1)
                     # print "-------------------------------------"
+
+
+
                     if (rect.bottom() - rect.top()) * (rect.right() - rect.left()) > 1400:
                         self.get_image_switch = False
                         self.TextToSpe.say("I have found you.")
         else:
             if self.turn_right_time <= 7:
-                self.set_velocity(0, 0, -0.2, duration=.7)
+                # self.set_velocity(0, 0, -0.2, duration=.7)
                 self.turn_right_time += 1
             else:
-                self.Motion.move(0, 0, 1)
-                duration = time.time() + 4
-                while time.time() < duration:
-                    continue
-                self.Motion.stopMove()
+                # self.Motion.move(0, 0, 1)
+                # duration = time.time() + 4
+                # while time.time() < duration:
+                #     continue
+                # self.Motion.stopMove()
                 self.turn_right_time = 0
 
             # print "turn left times:"
-#
-# if __name__ == "__main__":
-#     sess = qi.Session()
-#     try:
-#         sess.connect("tcp://192.168.3.18:9559")
-#     except RuntimeError:
-#         print("[Kamerider E] : connection Error!!")
-#     temp = wave_detection(sess)
-#     temp.find_person()
+
+if __name__ == "__main__":
+    sess = qi.Session()
+    try:
+        sess.connect("tcp://192.168.43.30:9559")
+    except RuntimeError:
+        print("[Kamerider E] : connection Error!!")
+    temp = wave_detection(sess)
+    temp.find_person()

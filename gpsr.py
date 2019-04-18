@@ -425,7 +425,7 @@ class gpsr():
                 print "Error!!"
 def main():
     params = {
-        'ip' : "192.168.3.18",
+        'ip' : "172.16.0.10",
         'port' : 9559
     }
     pepper_gpsr = gpsr(params)

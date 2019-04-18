@@ -16,7 +16,7 @@ from std_srvs.srv import Empty
 from actionlib_msgs.msg import GoalID
 from wave_detection import opencv_wave
 from gender_predict import baidu_gender
-from speech_recog import speech_recognition_text
+from speech_recog import baidu_recognition_text
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
 
@@ -303,7 +303,7 @@ class speech_person_recog():
         cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":/home/nao/audio/recog.wav ./audio_record"
         os.system(cmd)
         print('\033[0;32m [Kamerider I] Record ended start recognizing \033[0m')
-        self.recog_result = speech_recognition_text.main("./audio_record/recog.wav").lower()
+        self.recog_result = baidu_recognition_text.main("./audio_record/recog.wav").lower()
         print "===============", self.recog_result
 
     def take_picture(self):
@@ -467,7 +467,7 @@ class speech_person_recog():
 
 if __name__ == "__main__":
     params = {
-        'ip': "192.168.43.30",
+        'ip': "172.16.0.10",
         'port': 9559
     }
     speech_person_recog(params)

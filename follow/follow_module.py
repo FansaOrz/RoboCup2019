@@ -44,14 +44,16 @@ class pepper_follow:
         print('\033[0;32m [Kamerider I] follow function initialized \033[0m')
 
     def callback_people_dete(self, msg):
+        print "00000000000000000000"
         self.people_id = msg[1][0][0]
 
     def follow(self):
-        time.sleep(1)
+        time.sleep(3)
         while self.follow_enable:
             if self.people_id == 0:
                 print("\033[0;32;40m\t[Kamerider W] : There is nobody in front of me\033[0m")
-                self.TextToSpe.say("I can't see you, please adjust the distance between us  ")
+                time.sleep(2)
+                # self.TextToSpe.say("I can't see you, please adjust the distance between us  ")
                 continue
             else:
                 self.Tracker.registerTarget(self.target, self.people_id)
