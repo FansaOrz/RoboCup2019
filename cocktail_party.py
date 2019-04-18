@@ -92,7 +92,7 @@ class speech_person_recog():
         self.name_list = ["Jack", "Jerry", "Tom"]
         self.drink_list = ["apple juice", "wine", "beer"]
         self.stop_list = ["stop", "go back"]
-        self.angle = -0.4
+        self.angle = -0.25
         self.head_fix = True
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_party.txt")
@@ -387,7 +387,7 @@ class speech_person_recog():
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
         # if duration > 0 : stop after duration(sec)
-        tt = Twist()getStructuringElement
+        tt = Twist()
         tt.linear.x = x
         tt.linear.y = y
         tt.angular.z = theta
@@ -467,7 +467,7 @@ class speech_person_recog():
 
 if __name__ == "__main__":
     params = {
-        'ip': "192.168.3.18",
+        'ip': "192.168.43.30",
         'port': 9559
     }
     speech_person_recog(params)

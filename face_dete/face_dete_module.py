@@ -57,7 +57,6 @@ class face_dete:
                     self.Tracker.stopTracker()
                     self.Tracker.unregisterAllTargets()
                     self.TextToSpe.say("Hey! I have reached your position")
-                    self.TextToSpe.say("Please follow me to the car to carry some items")
                     break
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec

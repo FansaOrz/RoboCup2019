@@ -32,9 +32,9 @@ def main(path):
         file_content = f.read()
         base64_audio = base64.b64encode(file_content)
         body = urllib.urlencode({'audio': base64_audio})
-
+        print "00000000000000000000"
         r = requests.post(URL, headers=header, data=body)
-
+        print "==========================="
         result = json.loads(r.content)
         print result
 
@@ -49,6 +49,57 @@ def main(path):
         else:
             print("\033[0;33m [Kamerider W] : You don't need stop record\033[0m")
             time.sleep(5)
-#if __name__ == '__main__':
-#    main("../audio_record/test.wav")
 
+if __name__ == '__main__':
+    main("/home/jiashi/Desktop/Link to RoboCup2019/audio_record/test.wav")
+# # -*- coding: UTF-8 -*-
+# import requests
+# import time
+# import urllib
+# import json
+# import hashlib
+# import base64
+#
+# URL = "http://api.xfyun.cn/v1/service/v1/iat"
+# APPID = "5c487dc0"
+# API_KEY = "588f3f2f7a18769bafc778fdca809a9b"
+#
+# def getHeader():
+#     curTime = str(int(time.time()))
+#     param = "{\"engine_type\": \"sms-en16k\", \"aue\": \"raw\"}"
+#     paramBase64 = base64.b64encode(param)
+#
+#     m2 = hashlib.md5()
+#     m2.update(API_KEY + curTime + paramBase64)
+#     checkSum = m2.hexdigest()
+#     header ={
+# 		'X-CurTime':curTime,
+# 		'X-Param':paramBase64,
+# 		'X-Appid':APPID,
+# 		'X-CheckSum':checkSum,
+# 		'Content-Type':'application/x-www-form-urlencoded; charset=utf-8',
+# 	}
+#     return header
+#
+# def main(path):
+#     f = open(path, 'rb')
+#     file_content = f.read()
+#     base64_audio = base64.b64encode(file_content)
+#     body = urllib.urlencode({'audio': base64_audio})
+#
+#     r = requests.post(URL,headers=getHeader(),data=body)
+#     print "======="
+#     print r.content
+#     print "--------"
+#     result = json.loads(r.content)
+#
+#     if result["code"] == "0":
+#         print "success, data = " + result["data"]
+#     else:
+#         print r.text
+#
+#     return
+#
+# if __name__ == '__main__':
+#     main("/home/jiashi/Desktop/Link to RoboCup2019/audio_record/test.wav")
+#

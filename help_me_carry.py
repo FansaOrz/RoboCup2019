@@ -73,10 +73,10 @@ class help_me_carry():
         # 清除costmap
         self.map_clear_srv = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
         self.map_clear_srv()
-        # amcl定位
+        # amcl定位point_dataset
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         # 声明一些变量
-        self.angle = 0.5
+        self.angle = -0.4
         self.if_ask_time = False
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_help.txt")
@@ -130,7 +130,7 @@ class help_me_carry():
         self.record_delay = 2
         self.speech_hints = []
         self.enable_speech_recog = True
-        self.SoundDet.setParameter("Sensitivity", .8)
+        self.SoundDet.setParameter("Sensitivity", .4)
         self.SoundDet.subscribe('sd')
         self.SoundDet_s = self.Memory.subscriber("SoundDetected")
         self.SoundDet_s.signal.connect(self.callback_sound_det)
@@ -272,6 +272,7 @@ class help_me_carry():
         # face detection函数
         self.face = face_dete.face_dete_control(self.session)
         self.face.start_face_dete()
+        self.TextToSpe.say("Please follow me to the car to carry some items")
         self.go_to_waypoint(self.point_dataset["car"], "car", label="car")
 
     def get_car_position(self):
@@ -416,6 +417,9 @@ class help_me_carry():
                 elif command == 'gc':
                     self.get_car_position()
                 elif command == 'sr':
+                    self.TextToSpe.say("Dear operator.")
+                    self.TextToSpe.say("please talk to me after you heard ")
+                    self.AudioPla.playSine(1000, self.beep_volume, 1, .3)
                     self.start_record()
                 elif command == 'c':
                     self.cancel_plan(); self.set_velocity(0, 0, 0); break
@@ -426,7 +430,7 @@ class help_me_carry():
 
 def main():
     params = {
-        'ip' : "192.168.3.18",
+        'ip' : "192.168.43.30",
         'port' : 9559,
         'rgb_topic' : 'pepper_robot/camera/front/image_raw'
     }

@@ -55,3 +55,7 @@ def gender_pre(img_name):
             max_rectangle_geder = face_list[i]["gender"]["type"]
     cv2.imwrite("./person_image/result.jpg", img)
     return male_num, female_num, max_rectangle_geder
+
+
+if __name__ == '__main__':
+    gender_pre("/home/jiashi/Desktop/Link to RoboCup2019/gender_predict/3.jpg")
