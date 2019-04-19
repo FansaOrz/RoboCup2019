@@ -39,7 +39,7 @@ class pepper_follow:
         self.Motion.setTangentialSecurityDistance(.05)
         self.Motion.setOrthogonalSecurityDistance(.1)
         # 设置追踪时的距离
-        self.Tracker.setRelativePosition([-.5, 0.0, 0.0, 0.1, 0.1, 0.3])
+        self.Tracker.setRelativePosition([-.2, 0.0, 0.0, 0.1, 0.1, 0.3])
         print("                        ↓                            ")
         print('\033[0;32m [Kamerider I] follow function initialized \033[0m')
 

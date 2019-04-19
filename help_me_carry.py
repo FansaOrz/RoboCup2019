@@ -78,7 +78,7 @@ class help_me_carry():
         self.angle = -0.4
         self.if_ask_time = False
         self.if_need_record = False
-        self.point_dataset = self.load_waypoint("waypoints_help.txt")
+        self.point_dataset = self.load_waypoint("waypoints_gpsr.txt")
         #    LED的group
         self.led_name = ["Face/Led/Blue/Right/0Deg/Actuator/Value", "Face/Led/Blue/Right/45Deg/Actuator/Value",
                          "Face/Led/Blue/Right/90Deg/Actuator/Value", "Face/Led/Blue/Right/135Deg/Actuator/Value",
@@ -192,6 +192,7 @@ class help_me_carry():
                 self.thread_recording.join()
                 # start follow function
                 self.pepper_follow_me.start_follow()
+                print "---------------------------------------------------------------------------------"
                 return
         for i in range(len(self.go_back)):
             if re.search(self.go_back[i], self.recog_result) != None:
@@ -436,7 +437,7 @@ class help_me_carry():
 
 def main():
     params = {
-        'ip' : "172.16.0.10",
+        'ip' : "192.168.43.30",
         'port' : 9559,
         'rgb_topic' : 'pepper_robot/camera/front/image_raw'
     }

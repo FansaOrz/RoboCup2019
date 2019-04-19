@@ -1,78 +1,70 @@
 #! /usr/bin/env python
 # -*- encoding: UTF-8 -*-
+
+"""Example: Use Tracking Module to Track a Face"""
+
 import qi
+import argparse
+import sys
 import time
-from follow_me import follow_me
 
 
-class pepper_follow:
+def main(session, faceSize):
+    """
+    This example shows how to use ALTracker with face.
+    """
+    # Get the services ALTracker and ALMotion.
 
-    def __init__(self, session):
-        # self.temp = follow_me.FollowMe(session)
-        self.motion_service = session.service("ALMotion")
-        self.posture_service = session.service("ALRobotPosture")
-        self.people_service = session.service("ALPeoplePerception")
-        self.tracker_service = session.service("ALTracker")
-        self.RobotPos = session.service("ALRobotPosture")
+    motion_service = session.service("ALMotion")
+    tracker_service = session.service("ALTracker")
 
-        self.tts = session.service("ALTextToSpeech")
-        self.AutonomousLife = session.service("ALAutonomousLife")
-        # 关闭AutonomousLife模式
-        if self.AutonomousLife.getState() != "disabled":
-            self.AutonomousLife.setState("disabled")
-        self.RobotPos.goToPosture("Stand", .5)
-        self.tts.setLanguage("English")
-        self.tts.setParameter("speed", 90)
-        self.motion_service.wakeUp()
+    # First, wake up.
+    motion_service.wakeUp()
 
-        # Set Stiffness
-        names = "Body"
-        stiffness_lists = 1.0
-        time_lists = 1.0
-        self.motion_service.stiffnessInterpolation(names, stiffness_lists, time_lists)
+    # Add target to track.
+    targetName = "Face"
+    faceWidth = faceSize
+    tracker_service.registerTarget(targetName, faceWidth)
 
-        # Go to posture stand
-        fraction_max_speed = 1.0
-        self.posture_service.goToPosture("Standing", fraction_max_speed)
-        self.event_name = "Face"
-        self.no_person_warning = True
+    # Then, start tracker.
+    tracker_service.setMode("Navigate")
 
-        mode = "Head"
-        self.tracker_service.setMode(mode)
-        self.tracker_service.trackEvent(self.event_name)
+    tracker_service.track(targetName)
 
-        # minimize Security Distance
-        self.motion_service.setTangentialSecurityDistance(0.05)
-        self.motion_service.setOrthogonalSecurityDistance(0.10)
+    print "ALTracker successfully started, now show your face to robot!"
+    print "Use Ctrl+c to stop this script."
 
-        self.tracker_service.setRelativePosition([-0.5, 0.0, 0.0, 0.1, 0.1, 0.3])
-        self.start_follow()
-
-    def start_follow(self):
+    try:
         while True:
-            self.tracker_service.trackEvent(self.event_name)
-            position = self.tracker_service.getTargetPosition(0)
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print
+        print "Interrupted by user"
+        print "Stopping..."
 
-            if not position:
+    # Stop tracker.
+    tracker_service.stopTracker()
+    tracker_service.unregisterAllTargets()
+    # motion_service.rest()
 
-                print("No person in sight")
-                time.sleep(1)
-                if self.no_person_warning:
-                    self.no_person_warning = False
-                    self.tts.say("I cant see you. Please get in front of me.")
-            self.tracker_service.setRelativePosition([-0.5, 0.0, 0.0, 0.1, 0.1, 0.3])
-
-    def __del__(self):
-        # self.Tracker.stopTracker()
-        # self.Tracker.unregisterAllTargets()
-        print "[[["
+    print "ALTracker stopped."
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", type=str, default="192.168.43.30",
+                        help="Robot IP address. On robot or Local Naoqi: use '127.0.0.1'.")
+    parser.add_argument("--port", type=int, default=9559,
+                        help="Naoqi port number")
+    parser.add_argument("--facesize", type=float, default=0.1,
+                        help="Face width.")
+
+    args = parser.parse_args()
     session = qi.Session()
     try:
-        session.connect("tcp://172.16.0.10:9559")
+        session.connect("tcp://" + args.ip + ":" + str(args.port))
     except RuntimeError:
-        print("[Kamerider E] : connection Error!!")
+        print ("Can't connect to Naoqi at ip \"" + args.ip + "\" on port " + str(args.port) +".\n"
+               "Please check your script arguments. Run with -h option for help.")
         sys.exit(1)
-    pepper_follow(session)
+    main(session, args.facesize)

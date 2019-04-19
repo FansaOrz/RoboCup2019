@@ -55,19 +55,23 @@ def get_word(token, path):
         }
 
     req = requests.post(url,json.dumps(data),headers)
-    result = json.loads(req.text)
+    try:
+        result = json.loads(req.text)
+    except Exception as e:
+        print e
+        return "none"
     # print "========="
     # print result
     # print "========="
     # ret=result["result"][0]
-    return result
+    return result["result"][0]
 
 
 def main(path):
     token=get_token()
     try:
         ret = get_word(token, path)
-        result = str(ret["result"][0])
+        result = str(ret)
     except:
         print('失败了')
         return "00"

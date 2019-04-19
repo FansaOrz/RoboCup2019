@@ -13,6 +13,7 @@ class face_dete:
         self.FaceDet = session.service("ALFaceDetection")
         self.Tracker = session.service("ALTracker")
         self.Memory = session.service("ALMemory")
+        self.Motion = session.service("ALMotion")
         self.TextToSpe = session.service("ALTextToSpeech")
         # 人脸检测部分
         if self.FaceDet.isRecognitionEnabled():
@@ -25,13 +26,14 @@ class face_dete:
         # 开关
         self.switch_face_dete = False
         self.Tracker.registerTarget("Face", .2)
-        self.Tracker.setMode("Navigate")
+        self.Tracker.setMode("Move")
         self.face_id = 0
 
     def start_face_dete(self):
         num = 0
         ro_angle = -.25
         while self.switch_face_dete:
+            print "------------------"
             if self.face_id == 0:
                 num += 1
                 if num == 6:
@@ -42,8 +44,9 @@ class face_dete:
                 time.sleep(1)
             else:
                 break
-        self.TextToSpe.say("Hey! I'm going to your position")
         self.Tracker.track("Face")
+        self.TextToSpe.say("Hey! I'm going to your position")
+
         # 小于阈值的次数
         num = 0
         while self.switch_face_dete:
@@ -51,13 +54,16 @@ class face_dete:
             print target_position
             if not target_position:
                 continue
-            if target_position[0] < .5 and target_position[1] < 0:
+            if target_position[0] < 1.3 and target_position[2] > 0.9:
                 num += 1
-                if num > 10:
+                if num > 4:
                     self.Tracker.stopTracker()
                     self.Tracker.unregisterAllTargets()
                     self.TextToSpe.say("Hey! I have reached your position")
                     break
+            else:
+                self.Motion.moveTo(1, 0, 0)
+                time.sleep(1)
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
         # if duration > 0 : stop after duration(sec)
