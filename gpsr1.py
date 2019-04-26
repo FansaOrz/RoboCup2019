@@ -314,12 +314,14 @@ class gpsr():
         self.TextToSpe.say("Please call my name pepper, before each question")
         self.TextToSpe.say("Please talk to me after you heard ")
         self.AudioPla.playSine(1000, self.beep_volume, 1, .3)
-        time.sleep(.2)
-        self.say("three")
-        self.say("two")
-        self.say("one")
         for i in range(3):
             # self.say("please tell me the command")
+            time.sleep(.2)
+            self.say("three")
+            time.sleep(.5)
+            self.say("two")
+            time.sleep(.5)
+            self.say("one")
             self.start_recording(reset=True)
             self.analyze_content()
             if self.current_person_name == "none" and self.current_item == "none":
@@ -333,59 +335,10 @@ class gpsr():
                 continue
             else:
                 self.say("ok, I will go to the " + self.current_place + ", find " + self.current_person_name + ", and answer a question")
-                if self.current_place == "kitchen" or self.current_place == "party room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point3"], "point3")
-                    self.go_to_waypoint(self.point_dataset["point4"], "point4")
-                    self.go_to_waypoint(self.point_dataset["party room"], "party room")
-                    self.Motion.moveTo(1.2, -1.2, 0)
-                elif self.current_place == "bedroom":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["bedroom"], "bedroom")
-                    self.Motion.moveTo(1.2, 0, 0)
-                elif self.current_place == "dining room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point3"], "point3")
-                    self.go_to_waypoint(self.point_dataset["point5"], "point5")
-                    # self.go_to_waypoint(self.point_dataset["point6"], "point6")
-                    # self.go_to_waypoint(self.point_dataset["point7"], "point7")
-                elif self.current_place == "living room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                # self.go_to_waypoint(self.point_dataset[self.current_place], self.current_place)
-                self.angle = -.3
-                self.if_head_fix = False
-                self.face = face_dete.face_dete_control(self.session)
-                self.face.start_face_dete()
-                self.if_head_fix = True
-                self.start_head_fix()
-                self.say("dear operator, please say pepper before each question")
-                self.say("now, please ask me the question")
-                self.start_recording(reset=True)
-                self.analyze_content_later()
-                if self.current_place == "kitchen" or self.current_place == "party room":
-                    self.go_to_waypoint(self.point_dataset["party room"], "party room")
-                    self.go_to_waypoint(self.point_dataset["point4"], "point4")
-                    self.go_to_waypoint(self.point_dataset["point3"], "point3")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.Motion.moveTo(1.2, -1.2, 0)
-                elif self.current_place == "bedroom":
-                    self.go_to_waypoint(self.point_dataset["bedroom"], "bedroom")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.Motion.moveTo(1.2, 0, 0)
-                elif self.current_place == "dining room":
-                    # self.go_to_waypoint(self.point_dataset["point7"], "point7")
-                    # self.go_to_waypoint(self.point_dataset["point6"], "point6")
-                    self.go_to_waypoint(self.point_dataset["point5"], "point5")
-                    self.go_to_waypoint(self.point_dataset["point3"], "point3")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                elif self.current_place == "living room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
+                self.say("sorry, I could not finish this mission")
+                self.say("please ask me the next question")
+                continue
+
         if self.current_place == "living room" or self.current_place == "bedroom":
             self.go_to_waypoint(self.point_dataset["point2"], "point2")
             self.go_to_waypoint(self.point_dataset["point3"], "point3")

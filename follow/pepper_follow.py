@@ -16,6 +16,7 @@ class follow_me:
         self.follow_thread = Thread(target=self.a.follow(), args=[])
         self.follow_thread.start()
         self.follow_thread.join()
+        print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
     def stop_follow(self):
         self.a.follow_enable = False

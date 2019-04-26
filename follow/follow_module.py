@@ -30,16 +30,9 @@ class pepper_follow:
         self.people_id = 0
         self.RobotPos.goToPosture("Standing", speed)
         # 设置追踪模式
-        mode = "Move"
-        self.Tracker.setMode(mode)
-        # 设置追踪目标
-        self.target = "People"
-        self.Tracker.trackEvent(self.target)
-        # 调小安全距离
-        self.Motion.setTangentialSecurityDistance(.05)
-        self.Motion.setOrthogonalSecurityDistance(.1)
-        # 设置追踪时的距离
-        self.Tracker.setRelativePosition([-.2, 0.0, 0.0, 0.1, 0.1, 0.3])
+        # mode = "Navigate"
+        # self.Tracker.setMode(mode)
+
         print("                        ↓                            ")
         print('\033[0;32m [Kamerider I] follow function initialized \033[0m')
 
@@ -48,24 +41,27 @@ class pepper_follow:
         self.people_id = msg[1][0][0]
 
     def follow(self):
-        time.sleep(3)
+        print "111111================="
+        # tracker_service.trackEvent("Face")
+        # while self.follow_enable:
+        #     if self.people_id == 0:
+        #         print("\033[0;32;40m\t[Kamerider W] : There is nobody in front of me\033[0m")
+        #         time.sleep(2)
+        #         # self.TextToSpe.say("I can't see you, please adjust the distance between us  ")
+        #         continue
+        #     else:
+        #         self.Tracker.registerTarget(self.target, self.people_id)
+        #         print "registe Target successfully!!"
+        #         break
         while self.follow_enable:
-            if self.people_id == 0:
-                print("\033[0;32;40m\t[Kamerider W] : There is nobody in front of me\033[0m")
-                time.sleep(2)
-                # self.TextToSpe.say("I can't see you, please adjust the distance between us  ")
-                continue
-            else:
-                self.Tracker.registerTarget(self.target, self.people_id)
-                print "registe Target successfully!!"
-                break
-        while self.follow_enable:
+            print "111111"
+
             # 获得机器人躯干坐标系下距离目标的距离
             target_position = self.Tracker.getTargetPosition(0)
             if not target_position:
                 continue
             # 距离大于1.7m
-            if target_position[0] > 1.7:
+            if target_position[0] > 1.2:
                 self.TextToSpe.say("Please slow down, I can not follow you")
         self.Tracker.stopTracker()
         self.Tracker.unregisterAllTargets()

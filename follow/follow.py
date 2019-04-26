@@ -27,9 +27,7 @@ def main(session, faceSize):
     tracker_service.registerTarget(targetName, faceWidth)
 
     # Then, start tracker.
-    tracker_service.setMode("Navigate")
-
-    tracker_service.track(targetName)
+    tracker_service.trackEvent("Face")
 
     print "ALTracker successfully started, now show your face to robot!"
     print "Use Ctrl+c to stop this script."

@@ -26,7 +26,8 @@ class face_dete:
         # 开关
         self.switch_face_dete = False
         self.Tracker.registerTarget("Face", .2)
-        self.Tracker.setMode("Move")
+        self.Tracker.setMode("Navigate")
+        # self.Tracker.trackEvent("Face")
         self.face_id = 0
 
     def start_face_dete(self):
@@ -44,7 +45,7 @@ class face_dete:
                 time.sleep(1)
             else:
                 break
-        self.Tracker.track("Face")
+        self.Tracker.trackEvent("Face")
         self.TextToSpe.say("Hey! I'm going to your position")
 
         # 小于阈值的次数
@@ -60,6 +61,7 @@ class face_dete:
                     self.Tracker.stopTracker()
                     self.Tracker.unregisterAllTargets()
                     self.TextToSpe.say("Hey! I have reached your position")
+                    self.TextToSpe.say("please follow me to the car position to help me carry something")
                     break
             else:
                 self.Motion.moveTo(1, 0, 0)

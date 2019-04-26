@@ -314,12 +314,14 @@ class gpsr():
         self.TextToSpe.say("Please call my name pepper, before each question")
         self.TextToSpe.say("Please talk to me after you heard ")
         self.AudioPla.playSine(1000, self.beep_volume, 1, .3)
-        time.sleep(.2)
-        self.say("three")
-        self.say("two")
-        self.say("one")
         for i in range(3):
             # self.say("please tell me the command")
+            time.sleep(.2)
+            self.say("three")
+            time.sleep(.5)
+            self.say("two")
+            time.sleep(.5)
+            self.say("one")
             self.start_recording(reset=True)
             self.analyze_content()
             if self.current_person_name == "none" and self.current_item == "none":
