@@ -77,7 +77,7 @@ class gpsr():
         # ROS 订阅器和发布器
         # 声明一些变量
         self.point_init = MoveBaseGoal()
-        self.point_dataset = self.load_waypoint("waypoints_gpsr.txt")
+        self.point_dataset = self.load_waypoint("waypoints_help.txt")
 
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
 
@@ -100,16 +100,9 @@ class gpsr():
         # 初始化关键字
         self.action = ["go to", "look for", "search", "Navigate"]
         # self.answer = ["answer" ]
-        self.place = ["bathroom", "kitchen", "party room", "dining room", "living room", "bedroom"]
-        self.person_name = ["James", "Alex","Ryan","John","Eric","Adam","Carter","Jack",
-                            "David","Tyler","Lily","Mary","Anna","Zoe","Sara","Sofia",
-                            "Faith","Julia","Paige","Jessica", "jams", "job", "join",
-                            "games", "Brian", "fight on", "out her", "barry", "finally",
-                            "lady", "lilly", "marymy", "Sarah", "Sawyer", "Sophia", "Soviet",
-                            "face", "page", "check", "cheque", "addicts"]
-        self.object_name = ["grapejuice", "cola", "biscuit", "apple", "soap", "beer", "icetea",
-                            "chips", "bread", "tray", "plate", "basket", "milk tea", "cup",
-                            "pear", "orange", "banana"]
+        self.place = ["bathroom", "kitchen", "dining room", "living room", "bedroom"]
+        self.person_name = ["Alex","Charlie","Elizabeth","Francis","James","Jennifer","John","Linda","Michael","Mary","Robert","Patricia","Robin","Skyler","William"]
+        self.object_name = ["ice tea", "beer", "coke", "milk", "orange juice", "toothpaste", "cookie", "shampoo"]
         self.current_action = "none"
         self.current_place = "none"
         self.current_item = "none"
@@ -122,6 +115,8 @@ class gpsr():
         self.VideoDev.subscribeCamera(str(ticks), 0, 2, 11, 40)
         # 设置dialog语言
         self.Dialog.setLanguage("English")
+        self.TextToSpe.setLanguage("English")
+
         # 加载pepper电脑里的topic
         self.Topic_path = '/home/nao/top/competetion_enu.top'
         # 以utf-8的格式编码
@@ -293,25 +288,27 @@ class gpsr():
             print('\033[0;32m [Kamerider I] Record ended start recognizing \033[0m')
             self.recog_result = baidu_recognition_text.main("./audio_record/recog.wav").lower()
 
-    def speech_recog(self):
-        channels = [0, 0, 1, 0]
-        self.AudioRec.startMicrophonesRecording(self.audio_path, "wav", 16000, channels)
-        speech_recognition_text.speech_recog()
+    # def speech_recog(self):
+    #     channels = [0, 0, 1, 0]
+    #     self.AudioRec.startMicrophonesRecording(self.audio_path, "wav", 16000, channels)
+    #     speech_recognition_text.speech_recog()
 
     def set_volume(self, volume):
         self.TextToSpe.setVolume(volume)
 
     def stop_motion(self):
-        self.cancel_plan()
+        # self.cancel_plan()
         self.set_velocity(0, 0, 0)
 
     def say(self, string):
         self.TextToSpe.say(string)
 
     def start(self):
-        # self.Motion.moveTo(.5, 0, 0)
+        time.sleep(1)
+        # self.go_to_waypoint(self.point_dataset["point1"], "point2")
+        self.Motion.moveTo(1.2, 0, 0)
         self.TextToSpe.say("Dear operator.")
-        self.TextToSpe.say("Please call my name pepper, before each question")
+        # self.TextToSpe.say("Please call my name pepper, before each question")
         self.TextToSpe.say("Please talk to me after you heard ")
         self.AudioPla.playSine(1000, self.beep_volume, 1, .3)
         for i in range(3):
@@ -335,27 +332,32 @@ class gpsr():
                 continue
             else:
                 self.say("ok, I will go to the " + self.current_place + ", find " + self.current_person_name + ", and answer a question")
-                if self.current_place == "kitchen" or self.current_place == "party room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
+                if self.current_place == "kitchen" :
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
                     self.go_to_waypoint(self.point_dataset["point2"], "point2")
                     self.go_to_waypoint(self.point_dataset["point3"], "point3")
-                    self.go_to_waypoint(self.point_dataset["point4"], "point4")
-                    self.go_to_waypoint(self.point_dataset["party room"], "party room")
-                    self.Motion.moveTo(1.2, -1.2, 0)
+                    self.go_to_waypoint(self.point_dataset["point5"], "point4")
+                    self.go_to_waypoint(self.point_dataset["point8"], "point4")
+                    self.TextToSpe.say("I have arrived at kitchen")
                 elif self.current_place == "bedroom":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
                     self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["bedroom"], "bedroom")
-                    self.Motion.moveTo(1.2, 0, 0)
+                    self.go_to_waypoint(self.point_dataset["point3"], "point2")
+                    self.go_to_waypoint(self.point_dataset["point4"], "point2")
+                    self.go_to_waypoint(self.point_dataset["point9"], "point2")
+                    self.TextToSpe.say("I have arrived at bedroom")
                 elif self.current_place == "dining room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point3"], "point3")
-                    self.go_to_waypoint(self.point_dataset["point5"], "point5")
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
+                    self.go_to_waypoint(self.point_dataset["point2"], "point1")
+                    self.go_to_waypoint(self.point_dataset["point3"], "point1")
+                    self.go_to_waypoint(self.point_dataset["point17"], "point2")
+                    # self.go_to_waypoint(self.point_dataset["point14"], "point3")
+                    self.TextToSpe.say("I have arrived at dinning room")
                     # self.go_to_waypoint(self.point_dataset["point6"], "point6")
                     # self.go_to_waypoint(self.point_dataset["point7"], "point7")
                 elif self.current_place == "living room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
+                    self.go_to_waypoint(self.point_dataset["point1"], "point2")
                 # self.go_to_waypoint(self.point_dataset[self.current_place], self.current_place)
                 self.angle = -.3
                 self.if_head_fix = False
@@ -367,45 +369,59 @@ class gpsr():
                 self.say("now, please ask me the question")
                 self.start_recording(reset=True)
                 self.analyze_content_later()
-                if self.current_place == "kitchen" or self.current_place == "party room":
-                    self.go_to_waypoint(self.point_dataset["party room"], "party room")
-                    self.go_to_waypoint(self.point_dataset["point4"], "point4")
+                if self.current_place == "kitchen":
+                    self.go_to_waypoint(self.point_dataset["point8"], "point4")
+                    self.go_to_waypoint(self.point_dataset["point5"], "point4")
                     self.go_to_waypoint(self.point_dataset["point3"], "point3")
                     self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.Motion.moveTo(1.2, -1.2, 0)
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
+                    # self.TextToSpe.say("I have arrived at kitchen")
                 elif self.current_place == "bedroom":
-                    self.go_to_waypoint(self.point_dataset["bedroom"], "bedroom")
+                    self.go_to_waypoint(self.point_dataset["point9"], "point2")
+                    self.go_to_waypoint(self.point_dataset["point4"], "point2")
+                    self.go_to_waypoint(self.point_dataset["point3"], "point2")
                     self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-                    self.Motion.moveTo(1.2, 0, 0)
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
+                    # self.TextToSpe.say("I have arrived at bedroom")
                 elif self.current_place == "dining room":
-                    # self.go_to_waypoint(self.point_dataset["point7"], "point7")
-                    # self.go_to_waypoint(self.point_dataset["point6"], "point6")
-                    self.go_to_waypoint(self.point_dataset["point5"], "point5")
-                    self.go_to_waypoint(self.point_dataset["point3"], "point3")
-                    self.go_to_waypoint(self.point_dataset["point2"], "point2")
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
+                    self.go_to_waypoint(self.point_dataset["point17"], "point2")
+                    self.go_to_waypoint(self.point_dataset["point3"], "point1")
+                    self.go_to_waypoint(self.point_dataset["point2"], "point1")
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
+                    # self.go_to_waypoint(self.point_dataset["point14"], "point3")
+                    # self.TextToSpe.say("I have arrived at dinning room")
                 elif self.current_place == "living room":
-                    self.go_to_waypoint(self.point_dataset["point1"], "point1")
-        if self.current_place == "living room" or self.current_place == "bedroom":
+                    self.go_to_waypoint(self.point_dataset["point1"], "point2")
+                    # self.go_to_waypoint(self.point_dataset["point11"], "point1")
+
+        if self.current_place == "living room" :
             self.go_to_waypoint(self.point_dataset["point2"], "point2")
             self.go_to_waypoint(self.point_dataset["point3"], "point3")
-            self.go_to_waypoint(self.point_dataset["point5"], "point5")
+            self.go_to_waypoint(self.point_dataset["point17"], "point5")
             self.go_to_waypoint(self.point_dataset["point6"], "point6")
             self.go_to_waypoint(self.point_dataset["point7"], "point7")
-        elif self.current_place == "party room" or self.current_place == "kitchen":
-            self.go_to_waypoint(self.point_dataset["point4"], "point4")
-            self.go_to_waypoint(self.point_dataset["point5"], "point5")
+            self.go_to_waypoint(self.point_dataset["point10"], "point7")
+        elif self.current_place == "kitchen":
+            self.go_to_waypoint(self.point_dataset["point15"], "point4")
+            self.go_to_waypoint(self.point_dataset["point17"], "point5")
             self.go_to_waypoint(self.point_dataset["point6"], "point6")
             self.go_to_waypoint(self.point_dataset["point7"], "point7")
+            self.go_to_waypoint(self.point_dataset["point10"], "point7")
         elif self.current_place == "dining room":
             self.go_to_waypoint(self.point_dataset["point6"], "point6")
             self.go_to_waypoint(self.point_dataset["point7"], "point7")
+            self.go_to_waypoint(self.point_dataset["point10"], "point7")
+        elif self.current_place == "bedroom":
+            self.go_to_waypoint(self.point_dataset["point9"], "point6")
+            self.go_to_waypoint(self.point_dataset["point4"], "point7")
+            self.go_to_waypoint(self.point_dataset["point17"], "point5")
+            self.go_to_waypoint(self.point_dataset["point6"], "point6")
+            self.go_to_waypoint(self.point_dataset["point7"], "point7")
+            self.go_to_waypoint(self.point_dataset["point10"], "point7")
         # self.go_to_waypoint(self.point_dataset["exit"], "exit")
 
     def go_to_waypoint(self, Point, destination, label="none"):  # Point代表目标点 destination代表目标点的文本 label
-        self.angle = .1
+        self.angle = .3
         self.nav_as.send_goal(Point)
         self.map_clear_srv()
         count_time = 0

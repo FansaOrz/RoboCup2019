@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- encoding: UTF-8 -*-
 from threading import Thread
+import thread
 from .follow_module import pepper_follow
 import time
 
@@ -13,9 +14,16 @@ class follow_me:
 
     def start_follow(self):
         self.a.follow_enable = True
-        self.follow_thread = Thread(target=self.a.follow(), args=[])
-        self.follow_thread.start()
-        self.follow_thread.join()
+        print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        arg = tuple([1])
+        thread.start_new_thread(self.a.follow, arg)
+        # self.follow_thread = Thread(target=self.a.follow(), args=[])
+        print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+        # self.follow_thread.start()
+        print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+        # self.follow_thread.join()
         print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
     def stop_follow(self):

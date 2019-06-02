@@ -12,10 +12,11 @@ import datetime
 import actionlib
 from threading import Thread
 from json import dumps
-# from follow import pepper_follow
+from follow import pepper_follow
 from face_dete import face_dete
 from speech_recog import baidu_recognition_text
 from std_srvs.srv import Empty
+from std_msgs.msg import String
 from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped
 from actionlib_msgs.msg import GoalID
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -61,7 +62,7 @@ class help_me_carry():
         self.Motion.setOrthogonalSecurityDistance(.1)
         # 设置追踪时的距离
         self.Tracker.setRelativePosition([-.2, 0.0, 0.0, 0.1, 0.1, 0.3])
-        self.Tracker.setMode("Navigate")
+        self.Tracker.setMode("Move")
         self.target = "Face"
         self.return_ = False
         self.Tracker.registerTarget(self.target, .2)
@@ -80,6 +81,8 @@ class help_me_carry():
         # ROS 订阅器和发布器
         self.nav_as = actionlib.SimpleActionClient("/move_base", MoveBaseAction)
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self.init_pose_pub = rospy.Publisher('/initialpose', PoseWithCovarianceStamped, queue_size=1)
+        self.follow_start_pub = rospy.Publisher('/switch_pub_cmd', String, queue_size=1)
         self.goal_cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=1)
         self.nav_as.wait_for_server()
         # 清除costmap
@@ -113,7 +116,7 @@ class help_me_carry():
         print ('\033[0;32m [Kamerider I] Tablet initialize successfully \033[0m')
 
         # 初始化关键字
-        self.place = ["bathroom", "kitchen", "party room", "dining room", "living room", "bedroom"]
+        self.place = ["bathroom", "kitchen", "party room", "dining room","dinning room", "living room", "bedroom"]
         self.start = ["follow", "following", "start", "follow me"]
         self.stop = ["stop", "here is the car"]
         self.go_back = ["bathroom", "living room", "bedroom", "kitchen", "toilet"]
@@ -123,6 +126,7 @@ class help_me_carry():
         self.VideoDev.subscribeCamera(str(ticks), 0, 2, 11, 40)
         # 设置dialog语言
         self.Dialog.setLanguage("English")
+        self.TextToSpe.setLanguage("English")
         # 录下的音频保存的路径
         self.audio_path = '/home/nao/audio/record.wav'
         self.recog_result = "None"
@@ -131,7 +135,7 @@ class help_me_carry():
         self.head_fix = True
         # 设置初始化头的位置 走路的时候固定头的位置
         self.Motion.setStiffnesses("Head", 1.0)
-        self.Motion.setAngles("Head", [0., -0.25], .05)
+        self.Motion.setAngles("Head", [0., self.angle], .05)
         # 设置说话速度
         self.TextToSpe.setParameter("speed", 80.0)
         # 关闭AutonomousLife模式
@@ -139,7 +143,7 @@ class help_me_carry():
             self.AutonomousLife.setState("disabled")
         self.RobotPos.goToPosture("Stand", .5)
         # follow me function
-        # self.pepper_follow_me = pepper_follow.follow_me(self.session)
+        self.pepper_follow_me = pepper_follow.follow_me(self.session)
         # 初始化录音
         self.record_delay = 2
         self.speech_hints = []
@@ -149,7 +153,7 @@ class help_me_carry():
         self.SoundDet_s = self.Memory.subscriber("SoundDetected")
         self.SoundDet_s.signal.connect(self.callback_sound_det)
         # 调用成员函数
-        self.start_head_fix()
+        # self.start_head_fix()
         self.set_volume(.7)
         self.keyboard_control()
 
@@ -160,6 +164,7 @@ class help_me_carry():
         self.Tracker.unregisterAllTargets()
 
     def start_foll(self):
+        '''
         self.TextToSpe.say("Dear operator.")
         self.TextToSpe.say("Please call my name pepper, before each question")
         self.TextToSpe.say("Please talk to me after you heard ")
@@ -167,6 +172,7 @@ class help_me_carry():
         time.sleep(.5)
         self.TextToSpe.say("three")
         time.sleep(.5)
+        '''
         self.TextToSpe.say("two")
         time.sleep(.5)
         self.TextToSpe.say("one")
@@ -184,40 +190,79 @@ class help_me_carry():
             self.analyze_content()
         print('\033[0;32m [Kamerider I] start following the operator \033[0m')
         # start follow function
-        self.if_need_head = False
-        print "19191991911919919191"
-        self.follow()
+        self.angle = .0
+        # print "19191991911919919191"
+        # self.follow()
+        self.pepper_follow_me.start_follow()
+        # self.follow_start_pub.publish("on")
+        while not self.if_stop_follow:
+            print "--0-0-0-0-0-0-0-0-0-0-0-00-"
+            rospy.sleep(.5)
+            self.start_recording(reset=True)
+            self.analyze_content()
         print "--------------------------------------------------------------====================="
+
+
+        init_pose = PoseWithCovarianceStamped()
+        init_pose.header.frame_id = "map"
+        init_pose.pose.pose.position.x = -2.95008523941
+        init_pose.pose.pose.position.y = 0.435851972961
+        init_pose.pose.pose.orientation.z = 0.999605670231
+        init_pose.pose.pose.orientation.w = 0.0280803141226
+        init_pose.pose.covariance[0] = 0.25
+        init_pose.pose.covariance[7] = 0.25
+        init_pose.pose.covariance[35] = 0.06853
+        self.init_pose_pub.publish(init_pose)
+
+
         # self.pepper_follow_me
         self.start_head_fix()
         while not self.return_:
             self.start_recording(reset=True)
             self.analyze_content()
         self.TextToSpe.say("ok, I will go to the " + self.current_place + ", to find someone to help me")
-        if self.current_place == "kitchen" or self.current_place == "party room":
-            self.go_to_waypoint(self.point_dataset["point1"], "point1")
+        if self.current_place == "kitchen":
+            self.go_to_waypoint(self.point_dataset["point11"], "point1")
             self.go_to_waypoint(self.point_dataset["point2"], "point2")
             self.go_to_waypoint(self.point_dataset["point3"], "point3")
-            self.go_to_waypoint(self.point_dataset["point4"], "point4")
-            self.go_to_waypoint(self.point_dataset["party room"], "party room")
-            self.Motion.moveTo(1, 0, 0)
-            self.Motion.moveTo(0, 0, -3.14 / 2)
-            self.angle = -.3
+            self.go_to_waypoint(self.point_dataset["point5"], "point4")
+            self.go_to_waypoint(self.point_dataset["point8"], "point4")
+            self.TextToSpe.say("I have arrived at kitchen")
+            # self.go_to_waypoint(self.point_dataset["party room"], "party room")
+            # self.Motion.moveTo(1, 0, 0)
+            # self.Motion.moveTo(0, 0, -3.14 / 2)
         elif self.current_place == "bedroom":
-            self.go_to_waypoint(self.point_dataset["point1"], "point1")
+            self.go_to_waypoint(self.point_dataset["point11"], "point1")
             self.go_to_waypoint(self.point_dataset["point2"], "point2")
-            self.go_to_waypoint(self.point_dataset["bedroom"], "bedroom")
-            self.Motion.moveTo(.5, 0, 0)
-        elif self.current_place == "dining room":
-            self.go_to_waypoint(self.point_dataset["point1"], "point1")
-            self.go_to_waypoint(self.point_dataset["point2"], "point2")
-            self.go_to_waypoint(self.point_dataset["point3"], "point3")
-            self.go_to_waypoint(self.point_dataset["point5"], "point5")
+            self.go_to_waypoint(self.point_dataset["point3"], "point2")
+            self.go_to_waypoint(self.point_dataset["point4"], "point2")
+            self.go_to_waypoint(self.point_dataset["point9"], "point2")
+            self.TextToSpe.say("I have arrived at bedroom")
+            # self.go_to_waypoint(self.point_dataset["bedroom"], "bedroom")
+            # self.Motion.moveTo(.5, 0, 0)
+        elif self.current_place == "living room":
+            self.go_to_waypoint(self.point_dataset["point11"], "point1")
+            self.go_to_waypoint(self.point_dataset["point1"], "point2")
+            # self.go_to_waypoint(self.point_dataset["point14"], "point3")
+            self.TextToSpe.say("I have arrived at living room")
+        elif self.current_place == "dinning room" or self.current_place == "dining room":
+            self.go_to_waypoint(self.point_dataset["point11"], "point1")
+            self.go_to_waypoint(self.point_dataset["point2"], "point1")
+            self.go_to_waypoint(self.point_dataset["point3"], "point1")
+            self.go_to_waypoint(self.point_dataset["point17"], "point2")
+            # self.go_to_waypoint(self.point_dataset["point14"], "point3")
+            self.TextToSpe.say("I have arrived at dinning room")
+
+            # self.go_to_waypoint(self.point_dataset["point5"], "point5")
+        self.head_fix = False
+        self.Motion.setStiffnesses("Head", 1.0)
+        self.angle = -.3
+        self.Motion.setAngles("Head", [0., self.angle], .05)
         self.face = face_dete.face_dete_control(self.session)
         self.face.start_face_dete()
-        self.go_to_waypoint(self.point_dataset["point5"], "point5")
-        self.go_to_waypoint(self.point_dataset["point6"], "point6")
-        self.go_to_waypoint(self.point_dataset["point7"], "point7")
+        # self.go_to_waypoint(self.point_dataset["point5"], "point5")
+        # self.go_to_waypoint(self.point_dataset["point6"], "point6")
+        # self.go_to_waypoint(self.point_dataset["point7"], "point7")
         self.TextToSpe.say("this is the car location")
         self.TextToSpe.say("i have finished the mission")
 
@@ -316,6 +361,8 @@ class help_me_carry():
         #         return
         for i in range(len(self.stop)):
             if re.search(self.stop[i], self.recog_result) != None:
+                # self.follow_start_pub.publish("off")
+                self.pepper_follow_me.stop_follow()
                 self.recog_result = "None"
                 self.TextToSpe.say("I will stop following you")
                 self.if_stop_follow = True
@@ -441,8 +488,8 @@ class help_me_carry():
     def set_volume(self, volume):
         self.TextToSpe.setVolume(volume)
 
-    def go_to_waypoint(self, Point, destination, label):
-        self.angle = .1
+    def go_to_waypoint(self, Point, destination, label = None):
+        self.angle = .3
         self.nav_as.send_goal(Point)
         self.map_clear_srv()
         count_time = 0

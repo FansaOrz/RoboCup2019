@@ -4,6 +4,7 @@ import qi
 import os
 import re
 import cv2
+import sys
 import time
 import rospy
 import thread
@@ -92,10 +93,10 @@ class speech_person_recog():
         self.old_drink = "none"
         self.positive_list = ["yes", "of course", "we do"]
         self.negative_list = ["no", "sorry", "we don't", "regret"]
-        self.name_list = ["john", "mary", "anna", "lily","jack"]
-        self.drink_list = ["cola", "ice tea", "beer", "grape juice", "milk tea"]
+        self.name_list = ["Alex","Charlie","Elizabeth","Francis","James","Jennifer","John","Linda","Michael","Mary","Robert","Patricia","Robin","Skyler","William"]
+        self.drink_list = ["ice tea","beer","coke","milk","orange juice","toothpaste","cookie","shampoo", "chips", "green tea"]
         self.stop_list = ["stop", "go back"]
-        self.angle = .1
+        self.angle = -.1
         self.head_fix = True
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_help.txt")
@@ -129,7 +130,7 @@ class speech_person_recog():
         self.speech_hints = []
         self.enable_speech_recog = True
         # 1代表最灵敏
-        self.SoundDet.setParameter("Sensitivity", .5)
+        self.SoundDet.setParameter("Sensitivity", .4)
         self.SoundDet.subscribe('sd')
         self.SoundDet_s = self.Memory.subscriber("SoundDetected")
         self.SoundDet_s.signal.connect(self.callback_sound_det)
@@ -238,10 +239,9 @@ class speech_person_recog():
                 # 记下当前饮品的名字
                 if self.current_drink_name != []:
                     self.if_need_record = False
-                    if len(self.current_drink_name) == 1:
-                        self.TextToSpe.say("OK, I will take the " + self.current_drink_name[0] + " to you")
-                    else:
-                        self.TextToSpe.say("OK, I will ask the guest again")
+                    self.TextToSpe.say("OK, I will take the ")
+                    for i in range(len(self.current_drink_name)):
+                        self.TextToSpe.say(str(self.current_drink_name[i])+" ")
                 return "DRINK"
         # print "3", self.recog_result
         for i in range(len(self.positive_list)):
@@ -319,12 +319,26 @@ class speech_person_recog():
             self.take_picture()
 
     def start(self):
-        self.Motion.moveTo(2, 2, 0)
+        # self.Motion.moveTo(2, 2, 0)
+
+
+
+
+
+        # self.go_to_waypoint(self.point_dataset["point5"], "point1", "first")
+        self.go_to_waypoint(self.point_dataset["point18"], "point1", "first")
+        self.go_to_waypoint(self.point_dataset["point8"], "point1", "first")
+        # self.go_to_waypoint(self.point_dataset["point16"], "point1", "first")
+
+
+
+
         self.TextToSpe.say("Dear operator.")
-        self.TextToSpe.say("Please call my name pepper, before each question")
+        # self.TextToSpe.say("Please call my name pepper, before each question")
         self.TextToSpe.say("Please talk to me after you heard ")
         self.AudioPla.playSine(1000, self.beep_volume, 1, .3)
         time.sleep(1.5)
+        self.say("please call my name loudly if you want something")
         self.say("now. I am going to find the person")
         # find people
         # self.angle = .1
@@ -342,13 +356,13 @@ class speech_person_recog():
         car_position.target_pose.header.frame_id = '/map'
         car_position.target_pose.header.stamp = curr_pos.header.stamp
         car_position.target_pose.header.seq = curr_pos.header.seq
-        car_position.target_pose.pose.position.x = self.car_pose.pose.pose.position.x
-        car_position.target_pose.pose.position.y = self.car_pose.pose.pose.position.y
-        car_position.target_pose.pose.position.z = self.car_pose.pose.pose.position.z
-        car_position.target_pose.pose.orientation.x = self.car_pose.pose.pose.orientation.x
-        car_position.target_pose.pose.orientation.y = self.car_pose.pose.pose.orientation.y
-        car_position.target_pose.pose.orientation.z = self.car_pose.pose.pose.orientation.z
-        car_position.target_pose.pose.orientation.w = self.car_pose.pose.pose.orientation.w
+        car_position.target_pose.pose.position.x = self.car_pose.target_pose.pose.position.x
+        car_position.target_pose.pose.position.y = self.car_pose.target_pose.pose.position.y
+        car_position.target_pose.pose.position.z = self.car_pose.target_pose.pose.position.z
+        car_position.target_pose.pose.orientation.x = self.car_pose.target_pose.pose.orientation.x
+        car_position.target_pose.pose.orientation.y = self.car_pose.target_pose.pose.orientation.y
+        car_position.target_pose.pose.orientation.z = self.car_pose.target_pose.pose.orientation.z
+        car_position.target_pose.pose.orientation.w = self.car_pose.target_pose.pose.orientation.w
         self.car_pose = car_position
 
     def dialog_with_people(self):
@@ -368,17 +382,20 @@ class speech_person_recog():
         self.start_recording(reset=True)
         self.analyze_content()
         # 回到吧台
-        self.go_to_waypoint(self.point_dataset["point1"], "point1", "first")
-        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
-        self.go_to_waypoint(self.point_dataset["party room"], "party room", "first")
-        self.go_to_waypoint(self.point_dataset["bar"], "bar", "first")
+        # self.go_to_waypoint(self.point_dataset["point3"], "point1", "first")
+        # self.go_to_waypoint(self.point_dataset["point4"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point15"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point17"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point16"], "point2", "first")
+        # self.go_to_waypoint(self.point_dataset["party room"], "party room", "first")
+        # self.go_to_waypoint(self.point_dataset["bar"], "bar", "first")
         self.angle = -.5
         self.Motion.setAngles("Head", [0., self.angle], .1)
         print "======go back to the bar table======="
         if self.gender == "male":
-            self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name[0] + ", and his gender is " + self.gender)
+            self.say("dear bar tender, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name[0] + ", and his gender is " + self.gender)
         else:
-            self.say("hey, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name[0] + ", and her gender is " + self.gender)
+            self.say("dear bar tender, the guy named " + self.current_person_name + " wanted a cup of " + self.current_drink_name[0] + ", and her gender is " + self.gender)
         self.old_drink = self.current_drink_name[0]
         # 清空饮品名字
         self.current_drink_name = []
@@ -409,10 +426,14 @@ class speech_person_recog():
             result = self.analyze_content()
             if result == "POSITIVE":
                 print "go back to the party room"
-                self.go_to_waypoint(self.point_dataset["party room"], "cocktail_party_room", "first")
-                self.angle = -.5
-                self.Motion.setAngles("Head", [0., self.angle], .1)
-                self.dialog_with_people()
+
+                self.go_to_waypoint(self.point_dataset["point5"], "point1", "first")
+
+                # self.go_to_waypoint(self.point_dataset["party room"], "cocktail_party_room", "first")
+                # self.angle = -.5
+                # self.Motion.setAngles("Head", [0., self.angle], .1)
+                # self.dialog_with_people()
+                self.start()
             elif result == "NEGATIVE":
                 self.TextToSpe.say("Ok, I will stop.")
 
@@ -446,7 +467,7 @@ class speech_person_recog():
         # temp.find_person()
 
     def go_to_waypoint(self, Point, destination, label="none"): # Point代表目标点 destination代表目标点的文本 label
-        self.angle = .1
+        self.angle = .3
         self.nav_as.send_goal(Point)
         self.map_clear_srv()
         count_time = 0
@@ -457,7 +478,7 @@ class speech_person_recog():
             if count_time == 8:
                 self.map_clear_srv()
                 count_time = 0
-        self.TextToSpe.say("I have arrived at " + destination)
+        # self.TextToSpe.say("I have arrived at " + destination)
         if label == "none":
             return
 

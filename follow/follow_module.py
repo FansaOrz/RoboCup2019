@@ -16,6 +16,8 @@ class pepper_follow:
         self.TextToSpe = session.service("ALTextToSpeech")
         self.PeopPer = session.service("ALPeoplePerception")
         self.Memory = session.service("ALMemory")
+        self.Time_ = time.time()
+        self.PeoplePer.subscribe("Peoplee"+str(self.Time_))
         self.People_Dete = self.Memory.subscriber("PeoplePerception/PeopleDetected")
         self.People_Dete.signal.connect(self.callback_people_dete)
         # 设置成true时，所有其他可选的检测（比如脸、运动等）都将停用
@@ -23,15 +25,15 @@ class pepper_follow:
         # Set Stiffness
         name = "Body"
         stiffness = 1.0
-        time = 1.0
-        self.Motion.stiffnessInterpolation(name, stiffness, time)
+        time_ = 1.0
+        self.Motion.stiffnessInterpolation(name, stiffness, time_)
         # Go to posture stand
         speed = 1.0
         self.people_id = 0
         self.RobotPos.goToPosture("Standing", speed)
         # 设置追踪模式
-        # mode = "Navigate"
-        # self.Tracker.setMode(mode)
+        mode = "Move"
+        self.Tracker.setMode(mode)
 
         print("                        ↓                            ")
         print('\033[0;32m [Kamerider I] follow function initialized \033[0m')
@@ -40,21 +42,22 @@ class pepper_follow:
         print "00000000000000000000"
         self.people_id = msg[1][0][0]
 
-    def follow(self):
+    def follow(self, arg):
         print "111111================="
         # tracker_service.trackEvent("Face")
-        # while self.follow_enable:
-        #     if self.people_id == 0:
-        #         print("\033[0;32;40m\t[Kamerider W] : There is nobody in front of me\033[0m")
-        #         time.sleep(2)
-        #         # self.TextToSpe.say("I can't see you, please adjust the distance between us  ")
-        #         continue
-        #     else:
-        #         self.Tracker.registerTarget(self.target, self.people_id)
-        #         print "registe Target successfully!!"
-        #         break
         while self.follow_enable:
-            print "111111"
+            if self.people_id == 0:
+                print("\033[0;32;40m\t[Kamerider W] : There is nobody in front of me\033[0m")
+                time.sleep(2)
+                # self.TextToSpe.say("I can't see you, please adjust the distance between us  ")
+                continue
+            else:
+                self.Tracker.registerTarget("People", self.people_id)
+                print "registe Target successfully!!"
+                self.Tracker.track("People")
+                break
+        while self.follow_enable:
+            # print "111111"
 
             # 获得机器人躯干坐标系下距离目标的距离
             target_position = self.Tracker.getTargetPosition(0)
@@ -69,3 +72,6 @@ class pepper_follow:
     def __del__(self):
         self.Tracker.stopTracker()
         self.Tracker.unregisterAllTargets()
+        self.PeoplePer.unsubscribe("Peoplee"+str(self.Time_))
+
+

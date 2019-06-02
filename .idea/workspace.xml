@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="5205e51e-a280-4596-81d6-b9f52979c0ee" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/GPSR_question" beforeDir="false" afterPath="$PROJECT_DIR$/GPSR_question" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SPR.py" beforeDir="false" afterPath="$PROJECT_DIR$/SPR.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aaa_screenshot_aa16.02.2019.png" beforeDir="false" afterPath="$PROJECT_DIR$/aaa_screenshot_aa16.02.2019.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/audio_record/recog.wav" beforeDir="false" afterPath="$PROJECT_DIR$/audio_record/recog.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/audio_record/recog1.wav" beforeDir="false" afterPath="$PROJECT_DIR$/audio_record/recog1.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/audio_record/test.wav" beforeDir="false" afterPath="$PROJECT_DIR$/audio_record/test.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cocktail_party.py" beforeDir="false" afterPath="$PROJECT_DIR$/cocktail_party.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/face_dete/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_dete/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/face_dete/face_dete.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_dete/face_dete.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/face_dete/face_dete_module.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_dete/face_dete_module.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/follow/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/follow/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/follow/follow.py" beforeDir="false" afterPath="$PROJECT_DIR$/follow/follow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/follow/follow_module.py" beforeDir="false" afterPath="$PROJECT_DIR$/follow/follow_module.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/follow/pepper_follow.py" beforeDir="false" afterPath="$PROJECT_DIR$/follow/pepper_follow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/3.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/4.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/4_result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/4_result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/Untitled Document" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/Untitled Document" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/aaa.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/aaa.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/baidu_gender.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/baidu_gender.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/face_train_use_keras.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/face_train_use_keras.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/gender.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/gender.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/gender.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/gender.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/image_predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/image_predict.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/image_result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/image_result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/load_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/load_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/video_predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/video_predict.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gpsr.py" beforeDir="false" afterPath="$PROJECT_DIR$/gpsr.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gpsr1.py" beforeDir="false" afterPath="$PROJECT_DIR$/gpsr1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/help_me_carry.py" beforeDir="false" afterPath="$PROJECT_DIR$/help_me_carry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/laser.txt" beforeDir="false" afterPath="$PROJECT_DIR$/laser.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/laser_msg.txt" beforeDir="false" afterPath="$PROJECT_DIR$/laser_msg.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/persom.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/persom.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/2.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/3.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/4.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/5.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/aaa_screenshot_16.02.2019.png" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/aaa_screenshot_16.02.2019.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/aaa_screenshot_16.02.201s9.png" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/aaa_screenshot_16.02.201s9.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image2.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_0.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image_0.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_0222.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image_0222.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_03.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image_03.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_1.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image_1.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image_2.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image_result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_result1.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/image_result1.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/party_0.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/party_0.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/text.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/text.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/timg.jpeg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/timg.jpeg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/restaurant.py" beforeDir="false" afterPath="$PROJECT_DIR$/restaurant.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/speech_recog/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/baidu_recognition_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/speech_recog/baidu_recognition_text.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/iat_python3_demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/speech_recog/iat_python3_demo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/image_0.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/speech_recog/image_0.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/image_result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/speech_recog/image_result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/speech_recognition_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/speech_recog/speech_recognition_text.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/HandDetection.py" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/HandDetection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/License" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/License" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/baidu_wave.py" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/baidu_wave.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/five.png" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/five.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/my_test1.py" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/my_test1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wave_detection/opencv_wave.py" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/opencv_wave.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/waypoints_help.txt" beforeDir="false" afterPath="$PROJECT_DIR$/waypoints_help.txt" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/cocktail_party.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="389">
+              <caret line="482" column="18" lean-forward="true" selection-start-line="482" selection-start-column="18" selection-end-line="482" selection-end-column="18" />
+              <folding>
+                <element signature="e#49#58#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>load_waypoint</find>
+      <find>MoveBaseGoal</find>
+      <find>go_to_waypoint</find>
+      <find>nav_as</find>
+      <find>map_clear_srv</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectConfigurationFiles">
+    <option name="files">
+      <list>
+        <option value="$PROJECT_DIR$/.idea/RoboCup2019.iml" />
+        <option value="$PROJECT_DIR$/.idea/misc.xml" />
+        <option value="$PROJECT_DIR$/.idea/modules.xml" />
+        <option value="$PROJECT_DIR$/.idea/vcs.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="240" />
+    <option name="y" value="148" />
+    <option name="width" value="1440" />
+    <option name="height" value="745" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="RoboCup2019" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RoboCup2019" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5205e51e-a280-4596-81d6-b9f52979c0ee" name="Default Changelist" comment="" />
+      <created>1559460444671</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1559460444671</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="-6" width="1920" height="1023" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Favorites" side_tool="true" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18661043" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Version Control" />
+      <window_info anchor="bottom" id="Python Console" />
+      <window_info anchor="bottom" id="Terminal" />
+      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/cocktail_party.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="389">
+          <caret line="482" column="18" lean-forward="true" selection-start-line="482" selection-start-column="18" selection-end-line="482" selection-end-column="18" />
+          <folding>
+            <element signature="e#49#58#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

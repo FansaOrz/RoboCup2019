@@ -32,7 +32,7 @@ class my_test:
         self.switch = True
         self.sound_localization()
         while True:
-            if self.count>=3:
+            if self.count>=4:
                 self.stop_loc()
                 break
         # while not self.if_stop:
@@ -61,7 +61,7 @@ class my_test:
         print("----Located!----", self.sound_loc[1][2])
         print("Energy:", self.sound_loc[1][3])
         # time.sleep(0.5)
-        if self.sound_loc[1][2] > .5:
+        if self.sound_loc[1][2] > .3:
             self.motion.moveTo(0, 0, self.sound_loc[1][0])
         self.count += 1
         self.switch = True

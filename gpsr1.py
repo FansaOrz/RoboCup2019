@@ -293,16 +293,16 @@ class gpsr():
             print('\033[0;32m [Kamerider I] Record ended start recognizing \033[0m')
             self.recog_result = baidu_recognition_text.main("./audio_record/recog.wav").lower()
 
-    def speech_recog(self):
-        channels = [0, 0, 1, 0]
-        self.AudioRec.startMicrophonesRecording(self.audio_path, "wav", 16000, channels)
-        speech_recognition_text.speech_recog()
+    # def speech_recog(self):
+    #     channels = [0, 0, 1, 0]
+    #     self.AudioRec.startMicrophonesRecording(self.audio_path, "wav", 16000, channels)
+    #     speech_recognition_text.speech_recog()
 
     def set_volume(self, volume):
         self.TextToSpe.setVolume(volume)
 
     def stop_motion(self):
-        self.cancel_plan()
+        # self.cancel_plan()
         self.set_velocity(0, 0, 0)
 
     def say(self, string):
