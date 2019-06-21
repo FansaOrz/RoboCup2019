@@ -26,11 +26,11 @@ class pepper_follow:
         name = "Body"
         stiffness = 1.0
         time_ = 1.0
+        self.temp = 0
         self.Motion.stiffnessInterpolation(name, stiffness, time_)
         # Go to posture stand
         speed = 1.0
         self.people_id = 0
-        self.RobotPos.goToPosture("Standing", speed)
         # 设置追踪模式
         mode = "Move"
         self.Tracker.setMode(mode)
@@ -55,6 +55,9 @@ class pepper_follow:
                 self.Tracker.registerTarget("People", self.people_id)
                 print "registe Target successfully!!"
                 self.Tracker.track("People")
+                self.TextToSpe.say("I am ready to follow you")
+                self.TextToSpe.say("please lead me to the car position")
+                self.TextToSpe.say("Please say stop when you want me stop")
                 break
         while self.follow_enable:
             # print "111111"
@@ -64,8 +67,13 @@ class pepper_follow:
             if not target_position:
                 continue
             # 距离大于1.7m
-            if target_position[0] > 1.2:
-                self.TextToSpe.say("Please slow down, I can not follow you")
+            if target_position[0] > 3:
+                self.temp += 1
+                if self.temp == 100:
+                    print "+++++++++++++++++++++++++++++++BREAK+++++++++++++++++++++++++++++++++"
+                    break
+                print "-------------------------------------" + str(target_position[0])
+                # self.TextToSpe.say("current distance is" + str(round(target_position[0], 1)))
         self.Tracker.stopTracker()
         self.Tracker.unregisterAllTargets()
 

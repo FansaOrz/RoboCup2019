@@ -3,10 +3,28 @@
   <component name="ChangeListManager">
     <list default="true" id="5205e51e-a280-4596-81d6-b9f52979c0ee" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/audio_record/recog.wav" beforeDir="false" afterPath="$PROJECT_DIR$/audio_record/recog.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/carry_my_luggage.py" beforeDir="false" afterPath="$PROJECT_DIR$/carry_my_luggage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/find_my_mates.py" beforeDir="false" afterPath="$PROJECT_DIR$/find_my_mates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/follow/follow_module.py" beforeDir="false" afterPath="$PROJECT_DIR$/follow/follow_module.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/image_result.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/head_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/head_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/persom.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_0222.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_03.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_2.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_result.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/image_result1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/party_0.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/party_0.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_image/result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/image_0.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/image_result.jpg" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/HandDetection.py" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/HandDetection.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/License" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/License" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/waypoints_help.txt" beforeDir="false" afterPath="$PROJECT_DIR$/waypoints_help.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,68 +32,40 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="DockManager">
-    <window id="1">
-      <content type="file-editors">
-        <state>
-          <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-            <file pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/cocktail_party.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="228">
-                    <caret line="54" column="64" lean-forward="true" selection-start-line="54" selection-start-column="64" selection-end-line="54" selection-end-column="64" />
-                    <folding>
-                      <element signature="e#49#58#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
+  <component name="FavoritesManager">
+    <favorites_list name="RoboCup2019" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/wechat.py">
+        <entry file="file://$PROJECT_DIR$/find_my_mates.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="27" selection-start-line="27" selection-end-line="27" />
+            <state relative-caret-position="5010">
+              <caret line="354" column="27" selection-start-line="354" selection-start-column="27" selection-end-line="354" selection-end-column="27" />
               <folding>
-                <element signature="e#46#59#0" expanded="true" />
+                <element signature="e#49#58#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/message_pub.py">
+        <entry file="file://$PROJECT_DIR$/cocktail_party.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="375">
-              <caret line="29" selection-start-line="29" selection-end-line="29" />
+            <state relative-caret-position="6780">
+              <caret line="472" column="22" selection-start-line="472" selection-start-column="22" selection-end-line="472" selection-end-column="22" />
+              <folding>
+                <element signature="e#49#58#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/find_my_mates.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="331" column="14" selection-start-line="331" selection-start-column="14" selection-end-line="331" selection-end-column="14" />
-              <folding>
-                <element signature="e#49#58#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/carry_my_luggage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1095">
-              <caret line="92" column="85" selection-start-line="92" selection-start-column="85" selection-end-line="92" selection-end-column="85" />
+            <state relative-caret-position="269">
+              <caret line="324" column="37" lean-forward="true" selection-start-line="324" selection-start-column="37" selection-end-line="324" selection-end-column="37" />
               <folding>
                 <element signature="e#49#58#0" expanded="true" />
               </folding>
@@ -84,13 +74,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/navigation_node.py">
+        <entry file="file://$PROJECT_DIR$/follow/follow_module.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="23" column="21" selection-start-line="23" selection-start-column="21" selection-end-line="23" selection-end-column="21" />
-              <folding>
-                <element signature="e#49#59#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="810">
+              <caret line="56" column="44" selection-start-line="56" selection-start-column="44" selection-end-line="56" selection-end-column="44" />
             </state>
           </provider>
         </entry>
@@ -99,25 +86,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>load_waypoint</find>
-      <find>MoveBaseGoal</find>
-      <find>nav_as</find>
-      <find>map_clear_srv</find>
-      <find>thread</find>
-      <find>set_vel</find>
-      <find>cmd_vel_pub</find>
-      <find>record_audio</find>
-      <find>Leds</find>
-      <find>record_time</find>
-      <find>AudioRec</find>
-      <find>callback_sound_det</find>
-      <find>if_need_record</find>
+      <find>amcl_pose_cb</find>
+      <find>find_person</find>
+      <find>center</find>
+      <find>start_foll</find>
+      <find>start_head_fix</find>
+      <find>operator</find>
+      <find>pepper_follow_me</find>
       <find>self.angle</find>
-      <find>start</find>
-      <find>dialog_with_people</find>
-      <find>current_person_name</find>
+      <find>callback_people_dete</find>
+      <find>follow</find>
+      <find>self.follow</find>
+      <find>follow_enable</find>
+      <find>face_dete</find>
+      <find>get_car_position</find>
+      <find>self.target</find>
+      <find>self.current_place</find>
+      <find>self.audio_terminate</find>
+      <find>self.if_need_head</find>
+      <find>if_need_record</find>
+      <find>langua</find>
+      <find>RobotPos</find>
       <find>analyze_content</find>
-      <find>go_to_waypoint</find>
+      <find>point3</find>
+      <find>stretch_out_hand</find>
+      <find>head_fix_thread</find>
+      <find>thread</find>
+      <find>show_person_image</find>
+      <find>show_image</find>
+      <find>hand_close_thread</find>
+      <find>BehaviorMan</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -126,11 +124,14 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/carry_my_luggage.py" />
         <option value="$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/navigation_node.py" />
         <option value="$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/wechat.py" />
         <option value="$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/message_pub.py" />
+        <option value="$PROJECT_DIR$/gender_predict/body_feature.py" />
+        <option value="$PROJECT_DIR$/object_detection/darknet.py" />
         <option value="$PROJECT_DIR$/find_my_mates.py" />
+        <option value="$PROJECT_DIR$/follow/follow_module.py" />
+        <option value="$PROJECT_DIR$/carry_my_luggage.py" />
       </list>
     </option>
   </component>
@@ -144,7 +145,8 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="4">
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="960" />
     <option name="y" value="24" />
     <option name="width" value="960" />
     <option name="height" value="993" />
@@ -155,7 +157,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -163,10 +164,16 @@
               <item name="RoboCup2019" type="b2602c69:ProjectViewProjectNode" />
               <item name="RoboCup2019" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="RoboCup2019" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RoboCup2019" type="462c0819:PsiDirectoryNode" />
+              <item name="follow" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -200,12 +207,12 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="24" width="960" height="993" extended-state="4" />
+    <frame x="-1" y="-4" width="1922" height="1022" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.07538218" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4994401" visible="true" weight="0.06905641" />
+      <window_info id="Structure" order="1" sideWeight="0.5005599" side_tool="true" weight="0.20927781" />
+      <window_info id="Favorites" order="2" sideWeight="0.5005599" side_tool="true" weight="0.20927781" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
@@ -254,17 +261,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/message_pub.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="29" selection-start-line="29" selection-end-line="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/carry_my_luggage.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1095">
-          <caret line="92" column="85" selection-start-line="92" selection-start-column="85" selection-end-line="92" selection-end-column="85" />
+        <state relative-caret-position="30">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
           <folding>
-            <element signature="e#49#58#0" expanded="true" />
+            <element signature="e#46#67#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -279,20 +279,68 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cocktail_party.py">
+    <entry file="file://$PROJECT_DIR$/gender_predict/face_feature.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="54" column="64" lean-forward="true" selection-start-line="54" selection-start-column="64" selection-end-line="54" selection-end-column="64" />
+        <state relative-caret-position="900">
+          <caret line="64" selection-start-line="64" selection-end-line="64" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/object_detection/darknet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2370">
+          <caret line="161" column="16" selection-start-line="161" selection-start-column="16" selection-end-line="161" selection-end-column="16" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/follow/pepper_follow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="16" column="87" selection-start-line="16" selection-start-column="87" selection-end-line="16" selection-end-column="87" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gender_predict/body_feature.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="23" column="16" selection-start-line="23" selection-start-column="16" selection-end-line="23" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/find_my_mates.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5010">
+          <caret line="354" column="27" selection-start-line="354" selection-start-column="27" selection-end-line="354" selection-end-column="27" />
           <folding>
             <element signature="e#49#58#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/find_my_mates.py">
+    <entry file="file://$PROJECT_DIR$/cocktail_party.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="331" column="14" selection-start-line="331" selection-start-column="14" selection-end-line="331" selection-end-column="14" />
+        <state relative-caret-position="6780">
+          <caret line="472" column="22" selection-start-line="472" selection-start-column="22" selection-end-line="472" selection-end-column="22" />
+          <folding>
+            <element signature="e#49#58#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/follow/follow_module.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="810">
+          <caret line="56" column="44" selection-start-line="56" selection-start-column="44" selection-end-line="56" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/carry_my_luggage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="269">
+          <caret line="324" column="37" lean-forward="true" selection-start-line="324" selection-start-column="37" selection-end-line="324" selection-end-column="37" />
           <folding>
             <element signature="e#49#58#0" expanded="true" />
           </folding>

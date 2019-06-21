@@ -6,14 +6,12 @@ import re
 import sys
 import time
 import rospy
+import almath
 import atexit
 import thread
-import datetime
 import actionlib
 from threading import Thread
-from json import dumps
-from follow import pepper_follow
-from face_dete import face_dete
+# from follow import pepper_follow
 from speech_recog import baidu_recognition_text
 from std_srvs.srv import Empty
 from std_msgs.msg import String
@@ -44,6 +42,7 @@ class carry_my_luggage():
         self.Dialog = self.session.service("ALDialog")
         self.Motion = self.session.service("ALMotion")
         self.Tracker = self.session.service("ALTracker")
+        self.BehaviorMan = self.session.service("ALBehaviorManager")
         self.VideoDev = self.session.service("ALVideoDevice")
         self.AudioDev = self.session.service("ALAudioDevice")
         self.AudioPla = self.session.service("ALAudioPlayer")
@@ -55,18 +54,11 @@ class carry_my_luggage():
         self.SoundDet = self.session.service("ALSoundDetection")
         self.AnimatedSpe = self.session.service("ALAnimatedSpeech")
         self.AutonomousLife = self.session.service("ALAutonomousLife")
-        # 设置追踪目标
-        self.current_place = "none"
         # 调小安全距离
         self.Motion.setTangentialSecurityDistance(.05)
         self.Motion.setOrthogonalSecurityDistance(.1)
-        # 设置追踪时的距离
-        self.Tracker.setRelativePosition([-.2, 0.0, 0.0, 0.1, 0.1, 0.3])
-        self.Tracker.setMode("Move")
-        self.target = "Face"
-        self.return_ = False
-        self.Tracker.registerTarget(self.target, .2)
-        # 设置追踪时的距离        # 停止录音
+
+        # 停止录音
         try:
             self.AudioRec.stopMicrophonesRecording()
         except BaseException:
@@ -77,6 +69,7 @@ class carry_my_luggage():
         self.audio_terminate = False
         self.if_stop_follow = False
         self.if_need_head = True
+        self.if_need_hand = True
         self.if_start_follow = False
         # ROS 订阅器和发布器
         self.nav_as = actionlib.SimpleActionClient("/move_base", MoveBaseAction)
@@ -88,12 +81,10 @@ class carry_my_luggage():
         # 清除costmap
         self.map_clear_srv = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
         self.map_clear_srv()
-        self.follow_enable = True
         # amcl定位point_dataset
         rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         # 声明一些变量
         self.angle = -0.4
-        self.if_ask_time = False
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_help.txt")
         #    LED的group
@@ -115,17 +106,15 @@ class carry_my_luggage():
         self.TabletSer.cleanWebview()
         print ('\033[0;32m [Kamerider I] Tablet initialize successfully \033[0m')
         # 初始化关键字
-        self.place = ["bathroom", "kitchen", "party room", "dining room","dinning room", "living room", "bedroom"]
-        self.start = ["follow", "following", "start", "follow me"]
         self.stop = ["stop", "here is the car"]
-        self.go_back = ["bathroom", "living room", "bedroom", "kitchen", "toilet"]
         # 当前时间戳（订阅相机的名字，每个只能使用6次）
         ticks = time.time()
         # 0代表top相机 最后一个参数是fps
         self.VideoDev.subscribeCamera(str(ticks), 0, 2, 11, 40)
         # 设置dialog语言
-        self.Dialog.setLanguage("English")
         self.TextToSpe.setLanguage("English")
+        # track的程序名
+        self.track_behavior_name = "untitled-fbe05f/behavior_1"
         # 录下的音频保存的路径
         self.audio_path = '/home/nao/audio/record.wav'
         self.recog_result = "None"
@@ -142,7 +131,7 @@ class carry_my_luggage():
             self.AutonomousLife.setState("disabled")
         self.RobotPos.goToPosture("Stand", .5)
         # follow me function
-        self.pepper_follow_me = pepper_follow.follow_me(self.session)
+        # self.pepper_follow_me = pepper_follow.follow_me(self.session)
         # 初始化录音
         self.record_delay = 2
         self.speech_hints = []
@@ -152,8 +141,8 @@ class carry_my_luggage():
         self.SoundDet_s = self.Memory.subscriber("SoundDetected")
         self.SoundDet_s.signal.connect(self.callback_sound_det)
         # 调用成员函数
-        # self.start_head_fix()
         self.set_volume(.7)
+        self.show_image("instructions.png")
         self.keyboard_control()
 
     def __del__(self):
@@ -163,135 +152,57 @@ class carry_my_luggage():
         self.Tracker.unregisterAllTargets()
 
     def start_foll(self):
-        self.TextToSpe.say("two")
-        time.sleep(.5)
-        self.TextToSpe.say("one")
-        self.start_recording(reset=True)
-        self.analyze_content()
-        while self.if_start_follow != True:
-            self.TextToSpe.say("sorry please tell me again")
-            time.sleep(.5)
-            self.TextToSpe.say("three")
-            time.sleep(.5)
-            self.TextToSpe.say("two")
-            time.sleep(.5)
-            self.TextToSpe.say("one")
-            self.start_recording(reset=True)
-            self.analyze_content()
-        print('\033[0;32m [Kamerider I] start following the operator \033[0m')
-        # start follow function
-        self.angle = .0
-        # print "19191991911919919191"
-        # self.follow()
-        self.pepper_follow_me.start_follow()
-        # self.follow_start_pub.publish("on")
+        # 抬头
+        self.angle = -.5
+        self.Motion.setAngles("Head", [0., self.angle], .2)
+        self.TextToSpe.say("Dear operator.")
+        # self.TextToSpe.say("Please talk to me after my eyes' color turn to white ")
+        time.sleep(1)
+        # self.TextToSpe.say("Dear operator, I can not grasp the bag. Please pass me the bag ")
+        # 做出伸手的动作
+        self.stretch_out_hand()
+        time.sleep(5)
+        self.angle = -.2
+        self.Motion.setAngles("Head", [0., self.angle], .05)
+        # self.pepper_follow_me.start_follow()
+        if self.BehaviorMan.isBehaviorInstalled("untitled-fbe05f/behavior_1"):
+            # Check that it is not already running.
+            if (not self.BehaviorMan.isBehaviorRunning(self.track_behavior_name)):
+                # Launch behavior. This is a blocking call, use _async=True if you do not
+                # want to wait for the behavior to finish.
+                self.BehaviorMan.runBehavior(self.track_behavior_name, _async=True)
+                time.sleep(0.5)
+            else:
+                print "Behavior is already running."
+
+        else:
+            print "Behavior not found."
+            return
         while not self.if_stop_follow:
             rospy.sleep(.5)
             self.start_recording(reset=True)
             self.analyze_content()
-
-
-        init_pose = PoseWithCovarianceStamped()
-        init_pose.header.frame_id = "map"
-        init_pose.pose.pose.position.x = -2.95008523941
-        init_pose.pose.pose.position.y = 0.435851972961
-        init_pose.pose.pose.orientation.z = 0.999605670231
-        init_pose.pose.pose.orientation.w = 0.0280803141226
-        init_pose.pose.covariance[0] = 0.25
-        init_pose.pose.covariance[7] = 0.25
-        init_pose.pose.covariance[35] = 0.06853
-        self.init_pose_pub.publish(init_pose)
-
-
-        # self.pepper_follow_me
+        if (self.BehaviorMan.isBehaviorRunning(self.track_behavior_name)):
+            self.BehaviorMan.stopBehavior(self.track_behavior_name)
+            time.sleep(1.0)
+        else:
+            print "Behavior is already stopped."
+        # self.TextToSpe.say("please take away your bag")
+        # self.TextToSpe.say("I will go back to the living room")
         self.start_head_fix()
-        while not self.return_:
-            self.start_recording(reset=True)
-            self.analyze_content()
-        self.TextToSpe.say("ok, I will go to the " + self.current_place + ", to find someone to help me")
-        if self.current_place == "kitchen":
-            self.go_to_waypoint(self.point_dataset["point11"], "point1")
-            self.go_to_waypoint(self.point_dataset["point2"], "point2")
-            self.go_to_waypoint(self.point_dataset["point3"], "point3")
-            self.go_to_waypoint(self.point_dataset["point5"], "point4")
-            self.go_to_waypoint(self.point_dataset["point8"], "point4")
-            self.TextToSpe.say("I have arrived at kitchen")
-            # self.go_to_waypoint(self.point_dataset["party room"], "party room")
-            # self.Motion.moveTo(1, 0, 0)
-            # self.Motion.moveTo(0, 0, -3.14 / 2)
-        elif self.current_place == "bedroom":
-            self.go_to_waypoint(self.point_dataset["point11"], "point1")
-            self.go_to_waypoint(self.point_dataset["point2"], "point2")
-            self.go_to_waypoint(self.point_dataset["point3"], "point2")
-            self.go_to_waypoint(self.point_dataset["point4"], "point2")
-            self.go_to_waypoint(self.point_dataset["point9"], "point2")
-            self.TextToSpe.say("I have arrived at bedroom")
-            # self.go_to_waypoint(self.point_dataset["bedroom"], "bedroom")
-            # self.Motion.moveTo(.5, 0, 0)
-        elif self.current_place == "living room":
-            self.go_to_waypoint(self.point_dataset["point11"], "point1")
-            self.go_to_waypoint(self.point_dataset["point1"], "point2")
-            # self.go_to_waypoint(self.point_dataset["point14"], "point3")
-            self.TextToSpe.say("I have arrived at living room")
-        elif self.current_place == "dinning room" or self.current_place == "dining room":
-            self.go_to_waypoint(self.point_dataset["point11"], "point1")
-            self.go_to_waypoint(self.point_dataset["point2"], "point1")
-            self.go_to_waypoint(self.point_dataset["point3"], "point1")
-            self.go_to_waypoint(self.point_dataset["point17"], "point2")
-            # self.go_to_waypoint(self.point_dataset["point14"], "point3")
-            self.TextToSpe.say("I have arrived at dinning room")
-
-            # self.go_to_waypoint(self.point_dataset["point5"], "point5")
-        self.head_fix = False
-        self.Motion.setStiffnesses("Head", 1.0)
-        self.angle = -.3
-        self.Motion.setAngles("Head", [0., self.angle], .05)
-        self.face = face_dete.face_dete_control(self.session)
-        self.face.start_face_dete()
-        # self.go_to_waypoint(self.point_dataset["point5"], "point5")
-        # self.go_to_waypoint(self.point_dataset["point6"], "point6")
-        # self.go_to_waypoint(self.point_dataset["point7"], "point7")
-        self.TextToSpe.say("this is the car location")
-        self.TextToSpe.say("i have finished the mission")
-
-
-    def callback_people_dete(self, msg):
-        print "00000000000000000000"
-        self.people_id = msg[1][0][0]
-
-    def follow(self):
-        self.Tracker.trackEvent("Face")
-        print "111111================="
-        # while self.follow_enable:
-        #     if self.people_id == 0:
-        #         print("\033[0;32;40m\t[Kamerider W] : There is nobody in front of me\033[0m")
-        #         time.sleep(2)
-        #         # self.TextToSpe.say("I can't see you, please adjust the distance between us  ")
-        #         continue
-        #     else:
-        #         self.Tracker.registerTarget(self.target, self.people_id)
-        #         print "registe Target successfully!!"
-        #         break
-        while self.follow_enable:
-            print "111111"
-            self.start_recording(reset=True, withBeep=False)
-            self.analyze_content()
-            if self.if_stop_follow == True:
-                break
-
-            # 获得机器人躯干坐标系下距离目标的距离
-            target_position = self.Tracker.getTargetPosition(0)
-            if not target_position:
-                continue
-            # 距离大于1.7m
-            if target_position[0] > 1.2:
-                self.TextToSpe.say("Please slow down, I can not follow you")
-        self.Tracker.stopTracker()
-        self.Tracker.unregisterAllTargets()
+        # 回到livingroom
+        self.go_to_waypoint(self.point_dataset["point3"], "point3")
+        self.go_to_waypoint(self.point_dataset["point4"], "point4")
+        self.go_to_waypoint(self.point_dataset["point5"], "point4")
+        self.TextToSpe.say("I have arrived at living room")
 
     def start_head_fix(self):
         arg = tuple([1])
         thread.start_new_thread(self.head_fix_thread, arg)
+
+    def start_hand_close(self):
+        arg = tuple([1])
+        thread.start_new_thread(self.hand_close_thread, arg)
 
     def callback_sound_det(self, msg):
         if self.if_need_record:
@@ -313,6 +224,22 @@ class carry_my_luggage():
         else:
             print ('\033[0;32m [Kamerider I] Sound detected, but we don\'t need to record this audio \033[0m')
 
+    def stretch_out_hand(self):
+        fractionMaxSpeed = 0.5
+        self.Motion.setStiffnesses("RElbowRoll", 1.0)
+        self.Motion.setAngles("RElbowRoll", 52.3*almath.TO_RAD, fractionMaxSpeed)
+        self.Motion.setStiffnesses("RElbowYaw", 1.0)
+        self.Motion.setAngles("RElbowYaw", 62.4 * almath.TO_RAD, fractionMaxSpeed)
+        self.Motion.setStiffnesses("RHand", 1.0)
+        self.Motion.setAngles("RHand", 0.05 * almath.TO_RAD, fractionMaxSpeed)
+        self.Motion.setStiffnesses("RShoulderPitch", 1.0)
+        self.Motion.setAngles("RShoulderPitch", 45.1 * almath.TO_RAD, fractionMaxSpeed)
+        self.Motion.setStiffnesses("RShoulderRoll", 1.0)
+        self.Motion.setAngles("RShoulderRoll", -17.3 * almath.TO_RAD, fractionMaxSpeed)
+        self.Motion.setStiffnesses("RWristYaw", 1.0)
+        self.Motion.setAngles("RWristYaw", 104.5 * almath.TO_RAD, fractionMaxSpeed)
+        self.start_hand_close()
+
     def start_recording(self, reset=False, base_duration=3, withBeep=True):
         self.if_need_record = True
         self.record_time = time.time() + base_duration
@@ -328,48 +255,15 @@ class carry_my_luggage():
             print('\033[0;32m [Kamerider I] Start recording thread \033[0m')
 
     def analyze_content(self):
-        for i in range(len(self.start)):
-            if re.search(self.start[i].lower(), self.recog_result) != None:
-                self.recog_result = "None"
-                self.angle = -.1
-                self.TextToSpe.say("I will start following you")
-                self.if_start_follow = True
-                return "follow"
-        # for i in range(len(self.go_back)):
-        #     if re.search(self.go_back[i], self.recog_result) != None:
-        #         self.recog_result = "None"
-        #         print('\033[0;32m [Kamerider I] Start navigating to ' + self.go_back[i] + '  \033[0m')
-        #         self.kill_recording_thread()
-        #         # navigation function
-        #         self.TextToSpe.say("I'm going to the kitchen")
-        #         self.go_to_waypoint(self.point_dataset[self.go_back[i]], self.go_back[i], label="go_back")
-        #         # 调整头部的角度
-        #         self.angle = -.4
-        #         self.face_dete()
-        #         return
         for i in range(len(self.stop)):
             if re.search(self.stop[i], self.recog_result) != None:
                 # self.follow_start_pub.publish("off")
-                self.pepper_follow_me.stop_follow()
+                # self.pepper_follow_me.stop_follow()
                 self.recog_result = "None"
                 self.TextToSpe.say("I will stop following you")
                 self.if_stop_follow = True
                 print('\033[0;32m [Kamerider I] Stop following the person  \033[0m')
                 return "stop"
-        self.current_place = "none"
-        for i in range(len(self.place)):
-            if re.search(self.place[i].lower(), self.recog_result) != None:
-                print self.place[i]
-                self.current_place = self.place[i]
-                self.return_ = True
-                return
-                # 记住车的位置
-
-                # self.TextToSpe.say("I have memorized the location of the car")
-                # self.thread_recording.join()
-                # self.pepper_follow_me.stop_follow()
-                # return
-
         self.start_recording(reset=True, withBeep=False)
         self.analyze_content()
 
@@ -408,41 +302,32 @@ class carry_my_luggage():
         print "===============", self.recog_result
 
     def head_fix_thread(self, arg):
-        self.Motion.setStiffnesses("head", 1.0)
+        self.Motion.setStiffnesses("Body", 1.0)
         while self.if_need_head:
             if self.head_fix:
                 #print "=====self.angle:====", self.angle
                 self.Motion.setAngles("Head", [0., self.angle], .2)
             time.sleep(3)
 
-    def show_person_image(self):
-        cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":./person_image/person_image.png ~/.local/share/PackageManager/apps/boot-config/html"
-        os.system(cmd)
+    def hand_close_thread(self, arg):
+        self.Motion.setStiffnesses("head", 1.0)
+        while True:
+            if self.if_need_hand:
+                #print "=====self.angle:====", self.angle
+                self.Motion.setAngles("RHand", 0.05 * almath.TO_RAD, .6)
+                self.Motion.setAngles("RElbowRoll", 52.3 * almath.TO_RAD, .6)
+                self.Motion.setAngles("RElbowYaw", 62.4 * almath.TO_RAD, .6)
+                self.Motion.setAngles("RShoulderPitch", 45.1 * almath.TO_RAD, .6)
+                self.Motion.setAngles("RShoulderRoll", -17.3 * almath.TO_RAD, .6)
+                self.Motion.setAngles("RWristYaw", 104.5 * almath.TO_RAD, .6)
+            time.sleep(.1)
+
+    def show_image(self, image_name):
+        # cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":./person_image/person_image.png ~/.local/share/PackageManager/apps/boot-config/html"
+        # os.system(cmd)
         self.TabletSer.hideImage()
-        self.TabletSer.showImage("http://198.18.0.1/apps/boot-config/person_image.png")
+        # self.TabletSer.showImage("http://198.18.0.1/apps/boot-config/" + str(image_name))
 
-    def face_dete(self):
-        # face detection函数
-        self.face = face_dete.face_dete_control(self.session)
-        self.face.start_face_dete()
-        self.TextToSpe.say("Please follow me to the car to carry some items")
-        self.go_to_waypoint(self.point_dataset["car"], "car", label="car")
-
-    def get_car_position(self):
-        curr_pos = PoseStamped()
-        car_position = MoveBaseGoal()
-        car_position.target_pose.header.frame_id = '/map'
-        car_position.target_pose.header.stamp = curr_pos.header.stamp
-        car_position.target_pose.header.seq = curr_pos.header.seq
-        car_position.target_pose.pose.position.x = self.car_pose.pose.pose.position.x
-        car_position.target_pose.pose.position.y = self.car_pose.pose.pose.position.y
-        car_position.target_pose.pose.position.z = self.car_pose.pose.pose.position.z
-        car_position.target_pose.pose.orientation.x = self.car_pose.pose.pose.orientation.x
-        car_position.target_pose.pose.orientation.y = self.car_pose.pose.pose.orientation.y
-        car_position.target_pose.pose.orientation.z = self.car_pose.pose.pose.orientation.z
-        car_position.target_pose.pose.orientation.w = self.car_pose.pose.pose.orientation.w
-        self.point_dataset["car"] = car_position
-        print self.point_dataset["car"]
 
     def amcl_callback(self, msg):
         self.car_pose= msg
@@ -485,30 +370,9 @@ class carry_my_luggage():
         while self.nav_as.get_state() != 3:
             count_time += 1
             time.sleep(1)
-            # 如果有人问时间了
-            if self.if_ask_time:
-                # 测试是不是取消导航
-                self.goal_cancel_pub.publish(GoalID())
-                # %y 两位数的年份表示（00-99）%Y 四位数的年份表示（000-9999）%m 月份（01-12）
-                # %d 月内中的一天（0-31）%H 24小时制小时数（0-23）%I 12小时制小时数（01-12）
-                # %M 分钟数（00=59）%S 秒（00-59）
-                current_time = time.strftime('%H:%M',time.localtime(time.time())).split(":")
-                sentence = "The time is " + current_time[0] + " " + current_time[1]
-                print('\033[0;32m [Kamerider I] ' + sentence + ' \033[0m')
-                self.TextToSpe.say(sentence)
-                sentence = "Excuse me, I need to go to the " + destination + ", Please let me go"
-                self.TextToSpe.say(sentence)
-                sentence = "Thank you"
-                time.sleep(2)
-                self.TextToSpe.say(sentence)
-                time.sleep(2)
-                self.if_ask_time = False
+            if count_time == 8:
                 self.map_clear_srv()
-                self.nav_as.send_goal(Point)
-                # 每隔4s清除一次local map
-            # if count_time == 3:
-            #     self.map_clear_srv()
-            #     count_time = 0
+                count_time = 0
         if label == "go_back":
             print('\033[0;32m [Kamerider I] I have arrived at ' + destination + ', start looking for people \033[0m')
             self.TextToSpe.say("I have arrived at " + destination)
@@ -567,11 +431,9 @@ class carry_my_luggage():
                     self.set_velocity(0, 0, 1)
                 elif command == 'ee':
                     self.set_velocity(0, 0, -1)
-                elif command == 'gc':
-                    self.get_car_position()
                 elif command == 'go':
-                    self.go_to_waypoint(self.point_dataset["kitchen"], "kitchen", "none")
-                elif command == 'sr':
+                    self.test()
+                elif command == 'st':
                     self.start_foll()
                 elif command == 'c':
                     self.cancel_plan(); self.set_velocity(0, 0, 0); break
@@ -582,7 +444,7 @@ class carry_my_luggage():
 
 def main():
     params = {
-        'ip' : "192.168.3.63",
+        'ip' : "192.168.3.93",
         'port' : 9559,
         'rgb_topic' : 'pepper_robot/camera/front/image_raw'
     }
