@@ -60,10 +60,6 @@ def get_word(token, path):
     except Exception as e:
         print e
         return "none"
-    # print "========="
-    # print result
-    # print "========="
-    # ret=result["result"][0]
     return result["result"][0]
 
 

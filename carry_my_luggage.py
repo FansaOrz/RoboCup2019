@@ -70,19 +70,15 @@ class carry_my_luggage():
         self.if_stop_follow = False
         self.if_need_head = True
         self.if_need_hand = True
-        self.if_start_follow = False
         # ROS 订阅器和发布器
         self.nav_as = actionlib.SimpleActionClient("/move_base", MoveBaseAction)
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.init_pose_pub = rospy.Publisher('/initialpose', PoseWithCovarianceStamped, queue_size=1)
-        self.follow_start_pub = rospy.Publisher('/switch_pub_cmd', String, queue_size=1)
         self.goal_cancel_pub = rospy.Publisher('/move_base/cancel', GoalID, queue_size=1)
         self.nav_as.wait_for_server()
         # 清除costmap
         self.map_clear_srv = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
         self.map_clear_srv()
-        # amcl定位point_dataset
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_callback)
         # 声明一些变量
         self.angle = -0.4
         self.if_need_record = False
@@ -156,9 +152,10 @@ class carry_my_luggage():
         self.angle = -.5
         self.Motion.setAngles("Head", [0., self.angle], .2)
         self.TextToSpe.say("Dear operator.")
-        # self.TextToSpe.say("Please talk to me after my eyes' color turn to white ")
+        self.TextToSpe.say("Please talk to me after my eyes' color turn to white ")
         time.sleep(1)
-        # self.TextToSpe.say("Dear operator, I can not grasp the bag. Please pass me the bag ")
+        self.show_image("hand-me-the-bag.png")
+        self.TextToSpe.say("Dear operator, I can not grasp the bag. Please pass me the bag ")
         # 做出伸手的动作
         self.stretch_out_hand()
         time.sleep(5)
@@ -187,9 +184,11 @@ class carry_my_luggage():
             time.sleep(1.0)
         else:
             print "Behavior is already stopped."
-        # self.TextToSpe.say("please take away your bag")
-        # self.TextToSpe.say("I will go back to the living room")
+        self.TextToSpe.say("please take away your bag")
+        self.TextToSpe.say("I will go back to the living room")
         self.start_head_fix()
+        # TODO
+        self.if_need_hand = False
         # 回到livingroom
         self.go_to_waypoint(self.point_dataset["point3"], "point3")
         self.go_to_waypoint(self.point_dataset["point4"], "point4")
@@ -225,19 +224,25 @@ class carry_my_luggage():
             print ('\033[0;32m [Kamerider I] Sound detected, but we don\'t need to record this audio \033[0m')
 
     def stretch_out_hand(self):
-        fractionMaxSpeed = 0.5
-        self.Motion.setStiffnesses("RElbowRoll", 1.0)
-        self.Motion.setAngles("RElbowRoll", 52.3*almath.TO_RAD, fractionMaxSpeed)
-        self.Motion.setStiffnesses("RElbowYaw", 1.0)
-        self.Motion.setAngles("RElbowYaw", 62.4 * almath.TO_RAD, fractionMaxSpeed)
-        self.Motion.setStiffnesses("RHand", 1.0)
-        self.Motion.setAngles("RHand", 0.05 * almath.TO_RAD, fractionMaxSpeed)
-        self.Motion.setStiffnesses("RShoulderPitch", 1.0)
-        self.Motion.setAngles("RShoulderPitch", 45.1 * almath.TO_RAD, fractionMaxSpeed)
-        self.Motion.setStiffnesses("RShoulderRoll", 1.0)
-        self.Motion.setAngles("RShoulderRoll", -17.3 * almath.TO_RAD, fractionMaxSpeed)
-        self.Motion.setStiffnesses("RWristYaw", 1.0)
-        self.Motion.setAngles("RWristYaw", 104.5 * almath.TO_RAD, fractionMaxSpeed)
+        names_R = ["RElbowRoll", "RElbowYaw", "RHand", "RShoulderPitch", "RShoulderRoll", "RWristYaw"]
+        angleLists_R = [48.5 * almath.TO_RAD, 50.2 * almath.TO_RAD, 0.22 * almath.TO_RAD, 39.8 * almath.TO_RAD, -5.7 * almath.TO_RAD, 102.3 * almath.TO_RAD]
+        timeLists = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        isAbsolute = True
+        self.Motion.angleInterpolation(names_R, angleLists_R, timeLists, isAbsolute)
+        # self.Motion.angleInterpolation(names_L, angleLists_L, timeLists, isAbsolute)
+        # self.Motion.setStiffnesses("RElbowRoll", 1.0)
+        # self.Motion.setAngles("RElbowRoll", 52.3*almath.TO_RAD, fractionMaxSpeed)
+        # self.Motion.setStiffnesses("RElbowYaw", 1.0)
+        # self.Motion.setAngles("RElbowYaw", 62.4 * almath.TO_RAD, fractionMaxSpeed)
+        # self.Motion.setStiffnesses("RHand", 1.0)
+        # self.Motion.setAngles("RHand", 0.05 * almath.TO_RAD, fractionMaxSpeed)
+        # self.Motion.setStiffnesses("RShoulderPitch", 1.0)
+        # self.Motion.setAngles("RShoulderPitch", 45.1 * almath.TO_RAD, fractionMaxSpeed)
+        # self.Motion.setStiffnesses("RShoulderRoll", 1.0)
+        # self.Motion.setAngles("RShoulderRoll", -17.3 * almath.TO_RAD, fractionMaxSpeed)
+        # self.Motion.setStiffnesses("RWristYaw", 1.0)
+        # self.Motion.setAngles("RWristYaw", 104.5 * almath.TO_RAD, fractionMaxSpeed)
+        time.sleep(4)
         self.start_hand_close()
 
     def start_recording(self, reset=False, base_duration=3, withBeep=True):
@@ -302,35 +307,30 @@ class carry_my_luggage():
         print "===============", self.recog_result
 
     def head_fix_thread(self, arg):
-        self.Motion.setStiffnesses("Body", 1.0)
+        self.Motion.setStiffnesses("head", 1.0)
         while self.if_need_head:
             if self.head_fix:
-                #print "=====self.angle:====", self.angle
                 self.Motion.setAngles("Head", [0., self.angle], .2)
             time.sleep(3)
 
     def hand_close_thread(self, arg):
-        self.Motion.setStiffnesses("head", 1.0)
+        self.Motion.setStiffnesses("Body", 1.0)
+        names_R = ["RElbowRoll", "RElbowYaw", "RHand", "RShoulderPitch", "RShoulderRoll", "RWristYaw", "LElbowRoll", "LElbowYaw", "LHand", "LShoulderPitch", "LShoulderRoll", "LWristYaw"]
+        angleLists_R = [47.5 * almath.TO_RAD, -44.1 * almath.TO_RAD, 0.07 * almath.TO_RAD, 91.1 * almath.TO_RAD, -14.2 * almath.TO_RAD, 72.2 * almath.TO_RAD,
+                        -48.4 * almath.TO_RAD, 44.1 * almath.TO_RAD, 0.06 * almath.TO_RAD, 91.3 * almath.TO_RAD, 13.3 * almath.TO_RAD, -74.1 * almath.TO_RAD]
+        timeLists = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        isAbsolute = True
         while True:
             if self.if_need_hand:
-                #print "=====self.angle:====", self.angle
-                self.Motion.setAngles("RHand", 0.05 * almath.TO_RAD, .6)
-                self.Motion.setAngles("RElbowRoll", 52.3 * almath.TO_RAD, .6)
-                self.Motion.setAngles("RElbowYaw", 62.4 * almath.TO_RAD, .6)
-                self.Motion.setAngles("RShoulderPitch", 45.1 * almath.TO_RAD, .6)
-                self.Motion.setAngles("RShoulderRoll", -17.3 * almath.TO_RAD, .6)
-                self.Motion.setAngles("RWristYaw", 104.5 * almath.TO_RAD, .6)
+                self.Motion.angleInterpolation(names_R, angleLists_R, timeLists, isAbsolute)
+                # self.Motion.angleInterpolation(names_L, angleLists_L, timeLists, isAbsolute)
             time.sleep(.1)
 
     def show_image(self, image_name):
         # cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":./person_image/person_image.png ~/.local/share/PackageManager/apps/boot-config/html"
         # os.system(cmd)
         self.TabletSer.hideImage()
-        # self.TabletSer.showImage("http://198.18.0.1/apps/boot-config/" + str(image_name))
-
-
-    def amcl_callback(self, msg):
-        self.car_pose= msg
+        self.TabletSer.showImage("http://198.18.0.1/apps/boot-config/" + str(image_name))
 
     def load_waypoint(self, file_name):
         curr_pos = PoseStamped()
@@ -361,7 +361,7 @@ class carry_my_luggage():
     def set_volume(self, volume):
         self.TextToSpe.setVolume(volume)
 
-    def go_to_waypoint(self, Point, destination, label = None):
+    def go_to_waypoint(self, Point):
         self.angle = .3
         self.nav_as.send_goal(Point)
         self.map_clear_srv()
@@ -373,14 +373,6 @@ class carry_my_luggage():
             if count_time == 8:
                 self.map_clear_srv()
                 count_time = 0
-        if label == "go_back":
-            print('\033[0;32m [Kamerider I] I have arrived at ' + destination + ', start looking for people \033[0m')
-            self.TextToSpe.say("I have arrived at " + destination)
-            # find person function
-        elif label == "car":
-            self.TextToSpe.say("I have arrived the car position.")
-            self.TextToSpe.say("Mission succeeded")
-            self.__del__()
 
     def cancel_plan(self):
         self.goal_cancel_pub.publish(GoalID())
@@ -432,7 +424,7 @@ class carry_my_luggage():
                 elif command == 'ee':
                     self.set_velocity(0, 0, -1)
                 elif command == 'go':
-                    self.test()
+                    self.stretch_out_hand()
                 elif command == 'st':
                     self.start_foll()
                 elif command == 'c':

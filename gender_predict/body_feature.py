@@ -31,6 +31,7 @@ trans_color = {
     "黑":"black",
     "红":"red",
     "黄":"yellow",
+    "棕":"brown",
     "不确定":"none"
 }
 

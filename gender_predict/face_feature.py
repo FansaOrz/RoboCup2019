@@ -7,7 +7,7 @@ import base64
 import json
 
 
-def gender(img_name):
+def gender(img_name, upper_wear, upper_color, num):
     max_re = 0
     emotion = None
     max_rectangle_geder = "none"
@@ -69,7 +69,10 @@ def gender(img_name):
         emotion = "The emotion of person " + str(i + 1) + " is " + str(face_list[i]["emotion"]["type"])
         print emotion
         print "================================="
-    cv2.imwrite("./gender_result.jpg", img)
+        cv2.putText(img, "Age:"+str(face_list[i]["age"]), (10,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+        cv2.putText(img, "Skin color:"+str(face_list[i]["race"]["type"]), (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+        cv2.putText(img, "Wearing:"+str(upper_color) + ' ' + str(upper_wear), (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.imwrite("./person_result"+str(num)+".jpg", img)
     return face_list[i]["gender"]["type"], face_list[i]["age"], face_list[i]["race"]["type"]
 
 
@@ -85,4 +88,4 @@ def judge_expression(n):
 
 
 if __name__ == '__main__':
-    gender("./capture.jpg")
+    gender("./gender_result11.jpg", "short sleeve", "black")

@@ -21,10 +21,11 @@ from gender_predict import body_feature
 from speech_recog import baidu_recognition_text
 # from object_detection.darknet import object_detection
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, PoseStamped, PoseWithCovarianceStamped, Quaternion
 
-
-class find_my_mate():
+#TODO
+class where_is_this():
 
     def __init__(self, params):
         atexit.register(self.__del__)
@@ -32,7 +33,7 @@ class find_my_mate():
         self.ip = params["ip"]
         self.port = params["port"]
         self.session = qi.Session()
-        rospy.init_node("find_my_mate")
+        rospy.init_node("where_is_this")
         try:
             self.session.connect("tcp://" + self.ip + ":" + str(self.port))
         except RuntimeError:
@@ -85,25 +86,17 @@ class find_my_mate():
                          "Face/Led/Green/Left/270Deg/Actuator/Value", "Face/Led/Green/Left/315Deg/Actuator/Value"]
         self.Leds.createGroup("MyGroup", self.led_name)
         # 声明一些变量
+        self.place = ["TV", "sofa", "table", "bed", "tea table"]
         # amcl_pose话题的订阅器
         self.amcl_pose_sb = None
         self.position_result = []
         self.get_image_switch = True
         self.to_find_person_name = []
         self.current_drink_name = []
-        # 保存当前对话人的年龄性别
-        self.gender = "none"
-        self.age = "none"
         # 存储每次语音识别的类别
         self.type = "none"
         # 储存每次语音识别的结果
         self.audio_recog_result = "none"
-        # 保存当前人的肤色，衣服颜色和类别
-        self.lower_color = "none"
-        self.lower_wear = "none"
-        self.upper_color = "none"
-        self.upper_wear = "none"
-        self.skin_color  = "none"
         self.predefined_position = {
                 'table':[0.8722, -0.3192, 0, 0, 0.950170776273, 0.311729844444],
                 "sofa1":[2.629, -0.37998, 0, 0, 0.435683814323, 0.900099779989],
@@ -114,19 +107,18 @@ class find_my_mate():
                 "TV":[1.34616, -2.70090, 0, 0, -0.896545546577, 0.4429515582]
             }
         # 保存当前人旁边有什么东西
-        self.position = "none"
-        self.positive_list = ["yes", "of course", "we do"]
-        self.negative_list = ["no", "sorry", "we don't", "regret"]
-        self.name_list = ["Alex","Charlie","Elizabeth","Francis","James","Jennifer","John","Linda","Michael","Mary","Robert","Patricia","Robin","Skyler","William"]
+        self.old_drink = "none"
         self.angle = -.1
         self.person_num = 1
+        # laser计算的数量
+        self.laser_num = 0
         self.head_fix = True
+        # 判断门是不是开着的
+        self.if_door_open = False
         self.if_need_record = False
         self.point_dataset = self.load_waypoint("waypoints_help.txt")
         # 人脸识别
         self.detector = dlib.get_frontal_face_detector()
-        # 物体识别
-        # self.object_detection = object_detection()
         # 关闭basic_awareness
         if self.BasicAwa.isEnabled():
             self.BasicAwa.setEnabled(False)
@@ -146,8 +138,6 @@ class find_my_mate():
         self.RobotPos.goToPosture("StandInit", .2)
         # Beep 音量
         self.beep_volume = 70
-        # 脸最大的人的中心
-        self.center = 0
         # 设置说话速度
         self.TextToSpe.setParameter("speed", 75.0)
         # 初始化录音
@@ -174,11 +164,17 @@ class find_my_mate():
         arg = tuple([1])
         thread.start_new_thread(self.head_fix_thread, arg)
 
-    def show_person_image(self, img_name):
-        cmd = "sshpass -p kurakura326 scp ./person.jpg nao@" + str(self.ip) + ":~/.local/share/PackageManager/apps/boot-config/html"
-        os.system(cmd)
-        self.TabletSer.hideImage()
-        self.TabletSer.showImageNoCache("http://198.18.0.1/apps/boot-config/" + img_name)
+    def laser_callback(self, msg):
+        # 检测中间的laser的信息判断门是不是开着的
+        sum = 0
+        # 前面的laser的数据
+        for i in range(23, 37):
+            sum += msg.ranges[i]
+        print "current_sum=:",sum
+        # 大于阈值就认定门开了
+        if sum > 20:
+            self.if_door_open = True
+            self.laser_sb.unregister()
 
     def show_image(self, image_name):
         # cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":./person_image/person_image.png ~/.local/share/PackageManager/apps/boot-config/html"
@@ -193,9 +189,6 @@ class find_my_mate():
                 #print "=====self.angle:====", self.angle
                 self.Motion.setAngles("Head", [0., self.angle], .2)
             time.sleep(3)
-
-    def say(self, text):
-        self.TextToSpe.say(text)
 
     def load_waypoint(self, file_name):
         curr_pos = PoseStamped()
@@ -236,8 +229,6 @@ class find_my_mate():
             if ox == 1 and self.enable_speech_recog:
                 self.record_time = time.time() + self.record_delay
                 print "self.record_time += 3s ... ", self.record_time
-                #if not self.thread_recording.is_alive():
-                #    self.start_recording(reset=True)
                 while self.recog_result == "00":
                     time.sleep(1)
                     continue
@@ -246,54 +237,29 @@ class find_my_mate():
         else:
             print ('\033[0;32m [Kamerider I] Sound detected, but we don\'t need to record this audio \033[0m')
 
-    def cal_distence(self, position, orientation):
-        goal = transformations.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
-        min = 1000
-        # 寻找距离最近的点
-        for i in self.predefined_position.keys():
-            dist = (self.predefined_position[i][0] - position[0])*(self.predefined_position[i][0] - position[0]) + \
-                   (self.predefined_position[i][1] - position[1])*(self.predefined_position[i][1] - position[1])
-            if dist < min:
-                temp = transformations.euler_from_quaternion(
-                    [self.predefined_position[i][2], self.predefined_position[i][3],
-                     self.predefined_position[i][4], self.predefined_position[i][5]])
-                if (temp[2] > 0 and goal[2] > 0) or (temp[2] < 0 and goal[2] < 0):
-                    if abs(temp[2] - goal[2]) > 2.8 / 2:
-                        continue
-                    else:
-                        min = dist
-                        self.position = i
-                elif (temp[2] > 0 and goal[2] < 0) or (temp[2] < 0 and goal[2] > 0):
-                    if (6.28 - (abs(temp[2]) + abs(goal[2]))) < 2.8 / 2 or (abs(temp[2]) + abs(goal[2])) < 2.8 / 2:
-                        min = dist
-                        self.position = i
-                    else:
-                        continue
-        # 防止返回sofa1和sofa2
-        if self.position == "sofa1" or self.position == "sofa2":
-            self.position = "sofa"
-
     def analyze_content(self):
         result = []
-        # 记录是否找到人
-        person_found = False
+        # 记录是不是找到了地点
+        place_found = False
+
         # 获取要找的人姓名
-        for i in range(len(self.name_list)):
-            if re.search(self.name_list[i].lower(), self.recog_result) != None:
-                print "found one person:=", self.name_list[i].lower()
-                person_found = True
-                # 记下当前人的名字
-                result.append(self.name_list[i])
+        for i in range(len(self.place)):
+            if re.search(self.place[i].lower(), self.recog_result) != None:
+                print "found one place:=", self.place[i].lower()
+                place_found = True
+                # 记下当前地点的名字
+                result.append(self.place[i])
 
         self.recog_result = "00"
-        if person_found:
-            self.type = "NAME"
+        print len(result), "=========================="
+        if place_found and len(result) == 1:
+            self.type = "PLACE"
             self.audio_recog_result = result
             return
-        else:
-            self.say("sorry, please tell me again")
-            self.start_recording(reset=True)
-            self.analyze_content()
+
+        self.TextToSpe.say("sorry, please tell me again")
+        self.start_recording(reset=True)
+        self.analyze_content()
 
     def start_recording(self, reset=False, base_duration=3, withBeep=True):
         self.if_need_record = True
@@ -343,7 +309,7 @@ class find_my_mate():
         os.system(cmd)
         self.gender, self.age, self.skin_color = face_feature.gender("./person_image/party_0.jpg", self.upper_wear, self.upper_color, self.person_num)
         if self.gender == "none":
-            self.say("please look at my eyes")
+            self.TextToSpe.say("please look at my eyes")
             self.take_picture()
         else:
             return self.gender
@@ -358,141 +324,50 @@ class find_my_mate():
             self.ip) + ":~/.local/share/PackageManager/apps/boot-config/html"
         os.system(cmd)
 
-    def amcl_pose_cb(self, msg):
-        qua = Quaternion()
-        position = [msg.pose.pose.position.x, msg.pose.pose.position.y]
-        qua.x = msg.pose.pose.orientation.x
-        qua.y = msg.pose.pose.orientation.y
-        qua.z = msg.pose.pose.orientation.z
-        qua.w = msg.pose.pose.orientation.w
-        self.cal_distence(position, qua)
-        self.amcl_pose_sb.unregister()
-
     def start(self):
+        # 订阅laser的话题，判断门是不是开着的
+        self.laser_sb = rospy.Subscriber('/pepper_robot/naoqi_driver/laser', LaserScan, self.laser_callback)
+        print "start"
+        while not self.if_door_open:
+            time.sleep(.5)
+            # print "waiting the door"
+        self.TextToSpe.say("the door is open")
+        # 走进屋子
+        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
         # 抬头
-        self.angle = -.5
+        self.angle = -.4
         self.Motion.setAngles("Head", [0., self.angle], .2)
-        self.TextToSpe.say("Dear operator.")
-        # self.TextToSpe.say("Please call my name pepper, before each question")
-        self.TextToSpe.say("Please talk to me after my eyes' color turn to white ")
-        time.sleep(1)
-        self.to_find_person_name = ["test"]
-        while True:
-            # 开始和operator对话
+        num = 0
+        while num != 1:
+            self.TextToSpe.say("Where do you want to go? Please tell me")
             self.start_recording(reset=True)
             self.analyze_content()
-            self.to_find_person_name = self.audio_recog_result
-            if len(self.to_find_person_name) == 1:
-                self.TextToSpe.say("Sorry, I didn't catch you, can you tell me again?")
-            else:
-                break
-        self.say("ok, I will find ")
-        for i in range(len(self.to_find_person_name)):
-            self.say(str(self.to_find_person_name[i]) + " ")
-        # 走进屋子，开始找人
-        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
-        person_found_num = 0
-        while person_found_num != 2:
-            self.find_person()
-            self.get_image_switch = True
-            self.amcl_pose_sb = rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.amcl_pose_cb)
-            # 如果找到的人是我们的list的人
-            if self.dialog_with_people() == "succe":
-                person_found_num += 1
-                self.Motion.moveTo(0, 0, 0.52)
-                self.show_image("instructions.png")
-            else:
-                self.Motion.moveTo(0, 0, 0.52)
-                self.show_image("instructions.png")
-                continue
-        # 回到operator那里
-        self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
-        self.angle = -.5
-        for i in range(len(self.position_result)):
-            self.show_person_image("person_result"+str(i+1)+".jpg")
-            self.say(self.position_result[i])
-        # 清空
-        self.position_result = []
+            self.navigate_to_place(self.audio_recog_result[0])
+            num += 1
 
-        # 完成了两次，开始找第三个人
-        if len(self.to_find_person_name) == 1:
-            self.TextToSpe.say("Now I am going to find the third person")
-        else:
-            self.TextToSpe.say("Dear operator, I do not remember the third person's name, could you tell me again?")
-            self.start_recording(reset=True)
-            self.analyze_content()
-            self.to_find_person_name = self.audio_recog_result
-        self.say("I will find ")
-        for i in range(len(self.to_find_person_name)):
-            self.say(str(self.to_find_person_name[i]) + " ")
-        # 走进屋子，开始找人
-        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
-        person_found_num = 0
-        while person_found_num != 1:
-            self.find_person()
-            self.get_image_switch = True
-            self.amcl_pose_sb = rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.amcl_pose_cb)
-            self.show_image("instructions.png")
-            # 如果找到的人是我们的list的人
-            if self.dialog_with_people() == "succe":
-                person_found_num += 1
-                self.Motion.moveTo(0, 0, 0.52)
-            else:
-                self.Motion.moveTo(0, 0, 0.52)
-                continue
-        # 回到operator那里
-        self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
-        self.angle = -.5
-        for i in range(len(self.position_result)):
-            self.show_person_image("person_result" + str(i + 1) + ".jpg")
-            self.say(self.position_result[i])
 
     def stop_motion(self):
         self.goal_cancel_pub.publish(GoalID())
         self.set_velocity(0, 0, 0)
 
-    def dialog_with_people(self):
+    def navigate_to_place(self, place):
+        self.TextToSpe.say("I know where is the " + place + " ,please follow me")
+        print place
+        if place == "bed":
+            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+        elif place == "table":
+            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+        elif place == "TV":
+            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+        elif place == "tea table":
+            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+        elif place == "sofa":
+            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+        self.TextToSpe.say("here is the " + place)
         # 抬头
-        # self.angle = -.5
-        # self.Motion.setAngles("Head", [0., self.angle], .1)
-        # time.sleep(1)
-        # 拍照识别性别
-        self.take_picture()
-        self.show_person_image("person.jpg")
-        self.say("Hi, my name is pepper, what is your name?")
-        self.start_recording(reset=True)
-        self.analyze_content()
-        if self.type == "NAME":
-            for i in range(len(self.to_find_person_name)):
-                # 如果这个人在要找的list里面
-                print "========================match========================"
-                if re.search(self.audio_recog_result[0].lower(), self.to_find_person_name[i].lower()) != None:
-                    self.say("ok, I have remembered your position")
-                    if self.angle < -0.35:
-                        posture = "standing"
-                    else:
-                        posture = "sitting"
-                    self.add_name_to_img("person_result" + str(self.person_num) + ".jpg", self.position, self.to_find_person_name[i].lower(), posture)
-                    # num数加1
-                    self.person_num += 1
-                    if self.gender == "male":
-                        sentence = "the person named " + self.to_find_person_name[i].lower() + " is " + self.gender + ". And he is wearing " + \
-                                   self.upper_color + " " + self.upper_wear + ". And he is "+ posture +" next to " + self.position
-                    else:
-                        sentence = "the person named " + self.to_find_person_name[i].lower() + " is " + self.gender + ". And she is wearing " + \
-                                   self.upper_color + " " + self.upper_wear + ". And she is "+ posture +" next to " + self.position
-                    print "---------------------------------------------------result---------------------------------------------------"
-                    print sentence
-                    self.position_result.append(sentence)
-                    # 清空上一个人的数据
-                    self.to_find_person_name.remove(self.to_find_person_name[i])
-                    print "self.to_find_person_name", self.to_find_person_name
-                    self.upper_color = self.upper_wear = self.lower_wear = self.lower_color = self.position = self.gender = "none"
-                    # 找到了我们要找的人，返回“succe”
-                    return "succe"
-            self.TextToSpe.say("ok, thank you")
-            # 最终没有找到我们要的人，返回“wrong”
-            return "wrong"
+        self.angle = -.4
+        self.Motion.setAngles("Head", [0., self.angle], .2)
+        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
 
     def set_velocity(self, x, y, theta, duration=-1.):  # m/sec, rad/sec
         # if duration > 0 : stop after duration(sec)
@@ -517,120 +392,6 @@ class find_my_mate():
             self.audio_terminate = True
             self.if_need_record = False
 
-    def find_person(self):
-        self.angle = -.2
-        self.Motion.setAngles("Head", [0., self.angle], .2)
-        AL_kQVGA = 2
-        # Need to add All color space variables
-        AL_kRGBColorSpace = 13
-        fps = 60
-        nameId = self.VideoDev.subscribe("image" + str(time.time()), AL_kQVGA, AL_kRGBColorSpace, fps)
-        # create image
-        width = 640
-        height = 480
-        image = np.zeros((height, width, 3), np.uint8)
-        if_turn_finished = False
-        if_first = True
-        while self.get_image_switch:
-            print "---------------------------------------self.angle", self.angle
-            result = self.VideoDev.getImageRemote(nameId)
-            if result == None:
-                print 'cannot capture.'
-            elif result[6] == None:
-                print 'no image data string.'
-            else:
-                values = map(ord, list(str(bytearray(result[6]))))
-                i = 0
-                for y in range(0, height):
-                    for x in range(0, width):
-                        image.itemset((y, x, 0), values[i + 0])
-                        image.itemset((y, x, 1), values[i + 1])
-                        image.itemset((y, x, 2), values[i + 2])
-                        i += 3
-                # print image
-                cv2.imshow("pepper-top-camera-640*480px", image)
-                cv2.waitKey(1)
-                # dlib检测人脸
-                rects = self.detector(image, 2)
-                # 检测到人脸
-                if len(rects) != 0:
-                    if_first = True
-                    # 转向完成，开始接近人
-                    if if_turn_finished:
-                        # 第一次看到人，就进行一次特征识别
-                        while (self.upper_wear and self.upper_color == "none"):
-                            image_name = "/home/fansa/Src/pepper_example/RoboCup2019/person_body.jpg"
-                            cv2.imwrite(image_name, image)
-                            # self.position = self.object_detection.main(image_name)
-                            _, _, self.upper_color, self.upper_wear = body_feature.feature(image_name)
-                        # 接近脸最大的那个人
-                        image_max = 0
-                        for rect in rects:
-                            cv2.rectangle(image, (rect.left(), rect.top()), (rect.right(), rect.bottom()), (0, 0, 255), 2, 8)
-                            cv2.imshow("yess", image)
-                            cv2.imwrite("./person.jpg", image)
-                            if (rect.right() - rect.left()) * (rect.bottom() - rect.top()) > image_max:
-                                image_max = (rect.right() - rect.left()) * (rect.bottom() - rect.top())
-                                current_bottom = rect.bottom()
-                                current_top = rect.top()
-                                current_left = rect.left()
-                                current_right = rect.right()
-                        print  float(image_max) / float(width * height)
-                        if float(image_max) / float(width * height) > .04:
-                            self.get_image_switch = False
-                            self.if_stop = True
-                        else:
-                            # 判断是佛需要抬头
-                            if current_bottom < height / 1.6:
-                                print "upupupupupupupupupupupupupupup", current_bottom
-                                self.angle -= .1
-                                self.Motion.setAngles("Head", [0., self.angle], .2)
-                            elif current_top > height / 1.6:
-                                print "downdowndowndowndowndowndowndown", current_top
-                                self.angle += .1
-                                self.Motion.setAngles("Head", [0., self.angle], .2)
-                            # # 判断前进的距离
-                            # if float(image_max) / float(width * height) > .045:
-                            #     self.Motion.moveTo(.1, 0, 0)
-                            # elif float(image_max) / float(width * height) <= .02:
-                            #     self.Motion.moveTo(.3, 0, 0)
-                            # else:
-                            #     self.Motion.moveTo(0.2, 0, 0)
-                            self.set_velocity(.15, 0, 0)
-                            # 再旋转
-                            center = (current_left + current_right) / 2
-                            if abs(width / 2 - center) > width / 10:
-                                print "inininininininininininnnininininini"
-                                Error_dist_ = width / 2 - center
-                                self.set_velocity(0, 0, 0.001*Error_dist_)
-                                time.sleep(1.8)
-                                self.set_velocity(0.1, 0, 0)
-                        cv2.waitKey(1)
-                    # 开始转向人
-                    else:
-                        image_max = 0
-                        for rect in rects:
-                            cv2.rectangle(image, (rect.left(), rect.top()), (rect.right(), rect.bottom()), (0, 0, 255),
-                                          2, 8)
-                            cv2.imshow("yess", image)
-                            cv2.imwrite("./person.jpg", image)
-                            if (rect.right() - rect.left()) * (rect.bottom() - rect.top()) > image_max:
-                                image_max = (rect.right() - rect.left()) * (rect.bottom() - rect.top())
-                                self.center = (rect.left() + rect.right()) / 2
-                        Error_dist = width / 2 - self.center
-                        if abs(Error_dist) <= 10:
-                            if_turn_finished = True
-                            continue
-                        self.Motion.moveTo(0, 0, 0.002*Error_dist)
-                        cv2.waitKey(1)
-                # 没有检测到人脸就旋转
-                else:
-                    if if_first:
-                        if_first = False
-                        continue
-                    self.Motion.moveTo(0, 0, 0.52)
-        return "succe"
-
     def go_to_waypoint(self, Point, destination, label="none"): # Point代表目标点 destination代表目标点的文本 label
         # 设置头的角度
         self.angle = .3
@@ -645,7 +406,7 @@ class find_my_mate():
             count_time += 1
             time.sleep(1)
             if count_time == 8:
-                self.map_clear_srv()
+                # self.map_clear_srv()
                 count_time = 0
         # self.TextToSpe.say("I have arrived at " + destination)
         if label == "none":
@@ -692,4 +453,4 @@ if __name__ == "__main__":
         'ip': "192.168.3.93",
         'port': 9559
     }
-    find_my_mate(params)
+    where_is_this(params)

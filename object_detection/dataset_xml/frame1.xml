@@ -1,0 +1,26 @@
+<annotation>
+	<folder>get_data</folder>
+	<filename>frame1.jpg</filename>
+	<path>/home/fansa/Src/pepper_example/RoboCup2019/object_detection/get_data/frame1.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>544</width>
+		<height>960</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>waving</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>115</xmin>
+			<ymin>273</ymin>
+			<xmax>348</xmax>
+			<ymax>491</ymax>
+		</bndbox>
+	</object>
+</annotation>

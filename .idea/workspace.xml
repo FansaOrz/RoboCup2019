@@ -2,29 +2,37 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5205e51e-a280-4596-81d6-b9f52979c0ee" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/gender_predict/gender_result.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gender_predict/gender_result11.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hand-me-the-bag.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/object_detection/dataset_xml/frame0.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/object_detection/dataset_xml/frame1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/object_detection/dataset_xml/frame2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/person_result1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/person_result2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/where_is_this.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/audio_record/recog.wav" beforeDir="false" afterPath="$PROJECT_DIR$/audio_record/recog.wav" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/carry_my_luggage.py" beforeDir="false" afterPath="$PROJECT_DIR$/carry_my_luggage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/choregraphe_behavior/Peopletrack/behavior_1/behavior.xar" beforeDir="false" afterPath="$PROJECT_DIR$/choregraphe_behavior/Peopletrack/behavior_1/behavior.xar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/choregraphe_behavior/Peopletrack/manifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/choregraphe_behavior/Peopletrack/manifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature_result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/feature_result.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/find_my_mates.py" beforeDir="false" afterPath="$PROJECT_DIR$/find_my_mates.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/follow/follow_module.py" beforeDir="false" afterPath="$PROJECT_DIR$/follow/follow_module.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gender_predict/image_result.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/head_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/head_fix.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/persom.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/person_image/image_0222.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/person_image/image_03.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/person_image/image_1.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/person_image/image_2.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/person_image/image_result.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/person_image/image_result1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/body_feature.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/body_feature.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_predict/face_feature.py" beforeDir="false" afterPath="$PROJECT_DIR$/gender_predict/face_feature.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gender_result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/gender_result.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hts@192.168.3.97" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/instructions.png" beforeDir="false" afterPath="$PROJECT_DIR$/instructions.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/person_body.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_body.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/person_image/party_0.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/party_0.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/person_image/result.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/person_image/result.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/speech_recog/image_0.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/speech_recog/image_result.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/restaurant.py" beforeDir="false" afterPath="$PROJECT_DIR$/restaurant.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/speech_recog/baidu_recognition_text.py" beforeDir="false" afterPath="$PROJECT_DIR$/speech_recog/baidu_recognition_text.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/HandDetection.py" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/HandDetection.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/License" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/License" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wave_detection/Hand_Detection/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/wave_detection/Hand_Detection/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/waypoints_help.txt" beforeDir="false" afterPath="$PROJECT_DIR$/waypoints_help.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -40,20 +48,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/find_my_mates.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5010">
-              <caret line="354" column="27" selection-start-line="354" selection-start-column="27" selection-end-line="354" selection-end-column="27" />
-              <folding>
-                <element signature="e#49#58#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/cocktail_party.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6780">
-              <caret line="472" column="22" selection-start-line="472" selection-start-column="22" selection-end-line="472" selection-end-column="22" />
+            <state relative-caret-position="-7272">
+              <caret line="142" column="20" lean-forward="true" selection-start-line="142" selection-start-column="20" selection-end-line="142" selection-end-column="20" />
               <folding>
                 <element signature="e#49#58#0" expanded="true" />
               </folding>
@@ -62,10 +58,19 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/restaurant.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="17" column="45" selection-start-line="17" selection-start-column="45" selection-end-line="17" selection-end-column="45" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/carry_my_luggage.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="269">
-              <caret line="324" column="37" lean-forward="true" selection-start-line="324" selection-start-column="37" selection-end-line="324" selection-end-column="37" />
+            <state relative-caret-position="524">
+              <caret line="393" column="40" lean-forward="true" selection-start-line="393" selection-start-column="40" selection-end-line="393" selection-end-column="40" />
               <folding>
                 <element signature="e#49#58#0" expanded="true" />
               </folding>
@@ -73,49 +78,47 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/follow/follow_module.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="810">
-              <caret line="56" column="44" selection-start-line="56" selection-start-column="44" selection-end-line="56" selection-end-column="44" />
-            </state>
-          </provider>
-        </entry>
-      </file>
     </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>amcl_pose_cb</find>
+      <find>subscribe</find>
+      <find>Subscriber</find>
+      <find>callback</find>
+      <find>Dialog</find>
+      <find>scan_callback</find>
+      <find>if_door_open</find>
+      <find>start</find>
+      <find>take away</find>
+      <find>TODO</find>
       <find>find_person</find>
-      <find>center</find>
-      <find>start_foll</find>
-      <find>start_head_fix</find>
-      <find>operator</find>
-      <find>pepper_follow_me</find>
-      <find>self.angle</find>
-      <find>callback_people_dete</find>
-      <find>follow</find>
-      <find>self.follow</find>
-      <find>follow_enable</find>
-      <find>face_dete</find>
-      <find>get_car_position</find>
-      <find>self.target</find>
-      <find>self.current_place</find>
-      <find>self.audio_terminate</find>
-      <find>self.if_need_head</find>
-      <find>if_need_record</find>
-      <find>langua</find>
-      <find>RobotPos</find>
-      <find>analyze_content</find>
-      <find>point3</find>
-      <find>stretch_out_hand</find>
-      <find>head_fix_thread</find>
-      <find>thread</find>
-      <find>show_person_image</find>
       <find>show_image</find>
+      <find>scp</find>
+      <find>if_start_follow</find>
+      <find>if_stop_follow</find>
+      <find>follow_start_pub</find>
+      <find>amcl_callback</find>
+      <find>head_fix</find>
+      <find>laser_callback</find>
+      <find>print</find>
+      <find>recog_result</find>
+      <find>analy</find>
+      <find>analyze_content</find>
+      <find>name_list</find>
+      <find>30</find>
+      <find>clear_srv</find>
+      <find>start_foll</find>
+      <find>self.Motion</find>
+      <find>Rhand</find>
+      <find>start_hand_close</find>
       <find>hand_close_thread</find>
-      <find>BehaviorMan</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -127,36 +130,36 @@
         <option value="$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/navigation_node.py" />
         <option value="$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/wechat.py" />
         <option value="$PROJECT_DIR$/../../normal/catkin_ws/src/Robotics_Software_Engineering/scripts/message_pub.py" />
-        <option value="$PROJECT_DIR$/gender_predict/body_feature.py" />
         <option value="$PROJECT_DIR$/object_detection/darknet.py" />
-        <option value="$PROJECT_DIR$/find_my_mates.py" />
         <option value="$PROJECT_DIR$/follow/follow_module.py" />
+        <option value="$PROJECT_DIR$/speech_recog/baidu_recognition_text.py" />
+        <option value="$PROJECT_DIR$/object_detection/get_data/get_frame.py" />
+        <option value="$USER_HOME$/Software/darknet/training/pick_train&amp;test_jpg.py" />
+        <option value="$USER_HOME$/Software/darknet/darknet.py" />
+        <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/gender_predict/face_feature.py" />
+        <option value="$PROJECT_DIR$/gender_predict/body_feature.py" />
+        <option value="$PROJECT_DIR$/where_is_this.py" />
+        <option value="$PROJECT_DIR$/find_my_mates.py" />
         <option value="$PROJECT_DIR$/carry_my_luggage.py" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectConfigurationFiles">
-    <option name="files">
-      <list>
-        <option value="$PROJECT_DIR$/.idea/RoboCup2019.iml" />
-        <option value="$PROJECT_DIR$/.idea/misc.xml" />
-        <option value="$PROJECT_DIR$/.idea/modules.xml" />
-        <option value="$PROJECT_DIR$/.idea/vcs.xml" />
+        <option value="$PROJECT_DIR$/restaurant.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="960" />
     <option name="y" value="24" />
     <option name="width" value="960" />
     <option name="height" value="993" />
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -167,13 +170,17 @@
             <path>
               <item name="RoboCup2019" type="b2602c69:ProjectViewProjectNode" />
               <item name="RoboCup2019" type="462c0819:PsiDirectoryNode" />
-              <item name="follow" type="462c0819:PsiDirectoryNode" />
+              <item name="gender_predict" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="RoboCup2019" type="b2602c69:ProjectViewProjectNode" />
+              <item name="RoboCup2019" type="462c0819:PsiDirectoryNode" />
+              <item name="speech_recog" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -207,11 +214,11 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="-4" width="1922" height="1022" extended-state="6" />
+    <frame x="0" y="-6" width="1920" height="1023" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4994401" visible="true" weight="0.06905641" />
-      <window_info id="Structure" order="1" sideWeight="0.5005599" side_tool="true" weight="0.20927781" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49272117" visible="true" weight="0.10015815" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.50727886" side_tool="true" visible="true" weight="0.10015815" />
       <window_info id="Favorites" order="2" sideWeight="0.5005599" side_tool="true" weight="0.20927781" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -279,13 +286,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gender_predict/face_feature.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="900">
-          <caret line="64" selection-start-line="64" selection-end-line="64" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/object_detection/darknet.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2370">
@@ -303,26 +303,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gender_predict/body_feature.py">
+    <entry file="file://$PROJECT_DIR$/object_detection/get_data/get_frame.py" />
+    <entry file="file://$USER_HOME$/Software/darknet/darknet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="23" column="16" selection-start-line="23" selection-start-column="16" selection-end-line="23" selection-end-column="16" />
+        <state relative-caret-position="709">
+          <caret line="155" column="23" selection-start-line="155" selection-start-column="23" selection-end-line="155" selection-end-column="23" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/find_my_mates.py">
+    <entry file="file://$USER_HOME$/Software/darknet/training/pick_train&amp;test_jpg.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5010">
-          <caret line="354" column="27" selection-start-line="354" selection-start-column="27" selection-end-line="354" selection-end-column="27" />
+        <state relative-caret-position="225">
+          <caret line="15" column="21" selection-start-line="15" selection-start-column="21" selection-end-line="15" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="615">
+          <caret line="41" column="4" selection-start-line="41" selection-start-column="4" selection-end-line="41" selection-end-column="4" />
           <folding>
-            <element signature="e#49#58#0" expanded="true" />
+            <element signature="e#49#61#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/follow/follow_module.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="373">
+          <caret line="45" column="39" lean-forward="true" selection-start-line="45" selection-start-column="39" selection-end-line="45" selection-end-column="39" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/cocktail_party.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6780">
+        <state relative-caret-position="808">
           <caret line="472" column="22" selection-start-line="472" selection-start-column="22" selection-end-line="472" selection-end-column="22" />
           <folding>
             <element signature="e#49#58#0" expanded="true" />
@@ -330,20 +345,64 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/follow/follow_module.py">
+    <entry file="file://$PROJECT_DIR$/gender_predict/face_feature.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="56" column="44" selection-start-line="56" selection-start-column="44" selection-end-line="56" selection-end-column="44" />
+        <state relative-caret-position="540">
+          <caret line="78" column="24" lean-forward="true" selection-start-line="78" selection-start-column="24" selection-end-line="78" selection-end-column="24" />
+          <folding>
+            <element signature="e#25#52#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/speech_recog/baidu_recognition_text.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88">
+          <caret line="15" selection-start-line="15" selection-end-line="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gender_predict/body_feature.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-270">
+          <caret line="28" column="15" selection-start-line="28" selection-start-column="15" selection-end-line="28" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/where_is_this.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="406">
+          <caret line="409" column="30" selection-start-line="409" selection-start-column="30" selection-end-line="409" selection-end-column="30" />
+          <folding>
+            <element signature="e#49#58#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/find_my_mates.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-7272">
+          <caret line="142" column="20" lean-forward="true" selection-start-line="142" selection-start-column="20" selection-end-line="142" selection-end-column="20" />
+          <folding>
+            <element signature="e#49#58#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/carry_my_luggage.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="269">
-          <caret line="324" column="37" lean-forward="true" selection-start-line="324" selection-start-column="37" selection-end-line="324" selection-end-column="37" />
+        <state relative-caret-position="524">
+          <caret line="393" column="40" lean-forward="true" selection-start-line="393" selection-start-column="40" selection-end-line="393" selection-end-column="40" />
           <folding>
             <element signature="e#49#58#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/restaurant.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="45" selection-start-line="17" selection-start-column="45" selection-end-line="17" selection-end-column="45" />
         </state>
       </provider>
     </entry>

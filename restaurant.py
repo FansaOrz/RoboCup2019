@@ -15,6 +15,7 @@ from threading import Thread
 from json import dumps
 from follow import pepper_follow
 from face_dete import face_dete
+from object_detection import waving_detection
 from speech_recog import speech_recognition_text
 from std_srvs.srv import Empty
 from wave_detection import opencv_wave
@@ -198,9 +199,7 @@ class restaurant():
         self.TextToSpe.say("I am going to find the guest")
         # find guest function 抬头找人
         self.angle = -.2
-        print "fro"
         self.find_person()
-        print "qqqq"
         self.save_point()
         self.TextToSpe.say("hello, What can I do for you?")
         self.start_recording(reset=True)
@@ -315,6 +314,121 @@ class restaurant():
         self.point_dataset.append(point_temp)
         print('\033[0;32m [Kamerider I] Point saved successfully!! \033[0m')
         self.if_save_switch = False
+
+    def approach_waving(self):
+        self.angle = -.2
+        self.Motion.setAngles("Head", [0., self.angle], .2)
+        AL_kQVGA = 2
+        # Need to add All color space variables
+        AL_kRGBColorSpace = 13
+        fps = 60
+        nameId = self.VideoDev.subscribe("image" + str(time.time()), AL_kQVGA, AL_kRGBColorSpace, fps)
+        # create image
+        width = 640
+        height = 480
+        image = np.zeros((height, width, 3), np.uint8)
+        if_turn_finished = False
+        if_first = True
+        while self.get_image_switch:
+            print "---------------------------------------self.angle", self.angle
+            result = self.VideoDev.getImageRemote(nameId)
+            if result == None:
+                print 'cannot capture.'
+            elif result[6] == None:
+                print 'no image data string.'
+            else:
+                values = map(ord, list(str(bytearray(result[6]))))
+                i = 0
+                for y in range(0, height):
+                    for x in range(0, width):
+                        image.itemset((y, x, 0), values[i + 0])
+                        image.itemset((y, x, 1), values[i + 1])
+                        image.itemset((y, x, 2), values[i + 2])
+                        i += 3
+                # print image
+                cv2.imshow("pepper-top-camera-640*480px", image)
+                cv2.waitKey(1)
+                # dlib检测人脸
+                rects = self.detector(image, 2)
+                # 检测到人脸
+                if len(rects) != 0:
+                    if_first = True
+                    # 转向完成，开始接近人
+                    if if_turn_finished:
+                        # 第一次看到人，就进行一次特征识别
+                        while (self.upper_wear and self.upper_color == "none"):
+                            image_name = "/home/fansa/Src/pepper_example/RoboCup2019/person_body.jpg"
+                            cv2.imwrite(image_name, image)
+                            # self.position = self.object_detection.main(image_name)
+                            _, _, self.upper_color, self.upper_wear = body_feature.feature(image_name)
+                        # 接近脸最大的那个人
+                        image_max = 0
+                        for rect in rects:
+                            cv2.rectangle(image, (rect.left(), rect.top()), (rect.right(), rect.bottom()), (0, 0, 255),
+                                          2, 8)
+                            cv2.imshow("yess", image)
+                            cv2.imwrite("./person.jpg", image)
+                            if (rect.right() - rect.left()) * (rect.bottom() - rect.top()) > image_max:
+                                image_max = (rect.right() - rect.left()) * (rect.bottom() - rect.top())
+                                current_bottom = rect.bottom()
+                                current_top = rect.top()
+                                current_left = rect.left()
+                                current_right = rect.right()
+                        print  float(image_max) / float(width * height)
+                        if float(image_max) / float(width * height) > .04:
+                            self.get_image_switch = False
+                            self.if_stop = True
+                        else:
+                            # 判断是佛需要抬头
+                            if current_bottom < height / 1.6:
+                                print "upupupupupupupupupupupupupupup", current_bottom
+                                self.angle -= .1
+                                self.Motion.setAngles("Head", [0., self.angle], .2)
+                            elif current_top > height / 1.6:
+                                print "downdowndowndowndowndowndowndown", current_top
+                                self.angle += .1
+                                self.Motion.setAngles("Head", [0., self.angle], .2)
+                            # # 判断前进的距离
+                            # if float(image_max) / float(width * height) > .045:
+                            #     self.Motion.moveTo(.1, 0, 0)
+                            # elif float(image_max) / float(width * height) <= .02:
+                            #     self.Motion.moveTo(.3, 0, 0)
+                            # else:
+                            #     self.Motion.moveTo(0.2, 0, 0)
+                            self.set_velocity(.15, 0, 0)
+                            # 再旋转
+                            center = (current_left + current_right) / 2
+                            if abs(width / 2 - center) > width / 10:
+                                print "inininininininininininnnininininini"
+                                Error_dist_ = width / 2 - center
+                                self.set_velocity(0, 0, 0.001 * Error_dist_)
+                                time.sleep(1.8)
+                                self.set_velocity(0.1, 0, 0)
+                        cv2.waitKey(1)
+                    # 开始转向人
+                    else:
+                        image_max = 0
+                        for rect in rects:
+                            cv2.rectangle(image, (rect.left(), rect.top()), (rect.right(), rect.bottom()), (0, 0, 255),
+                                          2, 8)
+                            cv2.imshow("yess", image)
+                            cv2.imwrite("./person.jpg", image)
+                            if (rect.right() - rect.left()) * (rect.bottom() - rect.top()) > image_max:
+                                image_max = (rect.right() - rect.left()) * (rect.bottom() - rect.top())
+                                self.center = (rect.left() + rect.right()) / 2
+                        Error_dist = width / 2 - self.center
+                        if abs(Error_dist) <= 10:
+                            if_turn_finished = True
+                            continue
+                        self.Motion.moveTo(0, 0, 0.002 * Error_dist)
+                        cv2.waitKey(1)
+                # 没有检测到人脸就旋转
+                else:
+                    if if_first:
+                        if_first = False
+                        continue
+                    self.Motion.moveTo(0, 0, 0.52)
+        return "succe"
 
     def kill_recording_thread(self):
         if self.thread_recording.is_alive():
