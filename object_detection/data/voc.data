@@ -1,0 +1,6 @@
+classes= 1
+train  = /home/fansa/Software/darknet/training/train_set.txt
+valid  = /home/fansa/Software/darknet/training/test_set.txt
+names = /home/fansa/Software/darknet/training/voc.names
+backup = /home/fansa/Software/darknet/backup
+

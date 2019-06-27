@@ -44,7 +44,7 @@ class METADATA(Structure):
                 ("names", POINTER(c_char_p))]
 
     
-
+#PATH=/home/hts/RoboCup2019/object_detection
 #lib = CDLL("/home/pjreddie/documents/darknet/libdarknet.so", RTLD_GLOBAL)
 lib = CDLL("/home/fansa/Src/pepper_example/RoboCup2019/object_detection/libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
@@ -119,7 +119,7 @@ predict_image.restype = POINTER(c_float)
 class object_detection():
     def __init__(self):
         self.image_path = "/home/fansa/Src/pepper_example/RoboCup2019/object_detection/data/waving_detection.jpg"
-        self.net = load_net("/home/fansa/Src/pepper_example/RoboCup2019/object_detection/cfg/yolov2-voc.cfg", "/home/fansa/Src/pepper_example/RoboCup2019/object_detection/weights/waving_detection.backup", 0)
+        self.net = load_net("/home/fansa/Src/pepper_example/RoboCup2019/object_detection/cfg/yolov2-voc.cfg", "/home/fansa/Src/pepper_example/RoboCup2019/object_detection/weights/waving_detection.weights", 0)
         self.meta = load_meta("/home/fansa/Src/pepper_example/RoboCup2019/object_detection/data/voc.data")
 
     def detect(self, net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
@@ -142,10 +142,7 @@ class object_detection():
         free_image(im)
         free_detections(dets, num)
         print res
-        if len(res) == 0:
-            return "none"
-        else:
-            return res
+        return res
 
     def main(self, frame_name):
         r = self.detect(self.net, self.meta, frame_name)
@@ -168,32 +165,62 @@ class object_detection():
         cv2.waitKey(1)
         return r
 
-#
-# if __name__ == "__main__":
-#
-#     cap = cv2.VideoCapture(0)
-#     ok, frame = cap.read()
-#     cv2.namedWindow("aa", cv2.WINDOW_NORMAL)
-#     while ok:
-#         cv2.imwrite(image_path, frame)
-#         r = detect(net, meta, image_path)
-#         img = frame
-#         print r
-#         for i in range(len(r)):
-#             if r[i][1] > 0:
-#                 name =  r[i][0]
-#                 rect = r[i][2]
-#                 for i in range(len(rect)):
-#                     cv2.putText(img, name, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2)), cv2.FONT_HERSHEY_SIMPLEX,
-#                                 1, (255, 0, 0), 3)
-#                     cv2.rectangle(img, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2 - 10)), (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), (0,0,255), 3)
-#         cv2.imshow("aa", img)
-#         c = cv2.waitKey(1)
-#         if c & 0xFF == ord('q'):
-#             break
-#         ok,frame = cap.read()
-#     cap.release()
-#     cv2.destroyAllWindows()
+    def kkk(self):
+        cap = cv2.VideoCapture(0)
+        ok, frame = cap.read()
+        cv2.namedWindow("aa", cv2.WINDOW_NORMAL)
+        while ok:
+            cv2.imwrite(self.image_path, frame)
+            r = self.detect(self.net, self.meta, self.image_path)
+            img = frame
+            print r
+            print len(r)
+            for i in range(len(r)):
+                if r[i][1] > 0:
+                    name =  r[i][0]
+                    rect = r[i][2]
+                    for i in range(len(rect)):
+                        cv2.putText(img, name, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2)), cv2.FONT_HERSHEY_SIMPLEX,
+                                    1, (255, 0, 0), 3)
+                        cv2.rectangle(img, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2 - 10)), (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), (0,0,255), 3)
+            cv2.imshow("aa", img)
+            c = cv2.waitKey(1)
+            if c & 0xFF == ord('q'):
+                break
+            ok,frame = cap.read()
+        cap.release()
+        cv2.destroyAllWindows()
+
+
+
+
+if __name__ == "__main__":
+
+    s=object_detection()
+    s.kkk()
+    # cap = cv2.VideoCapture(0)
+    # ok, frame = cap.read()
+    # cv2.namedWindow("aa", cv2.WINDOW_NORMAL)
+    # while ok:
+    #     cv2.imwrite(image_path, frame)
+    #     r = detect(net, meta, image_path)
+    #     img = frame
+    #     print r
+    #     for i in range(len(r)):
+    #         if r[i][1] > 0:
+    #             name =  r[i][0]
+    #             rect = r[i][2]
+    #             for i in range(len(rect)):
+    #                 cv2.putText(img, name, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2)), cv2.FONT_HERSHEY_SIMPLEX,
+    #                             1, (255, 0, 0), 3)
+    #                 cv2.rectangle(img, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2 - 10)), (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), (0,0,255), 3)
+    #     cv2.imshow("aa", img)
+    #     c = cv2.waitKey(1)
+    #     if c & 0xFF == ord('q'):
+    #         break
+    #     ok,frame = cap.read()
+    # cap.release()
+    # cv2.destroyAllWindows()
 
     
 

@@ -87,6 +87,9 @@ class where_is_this():
         self.Leds.createGroup("MyGroup", self.led_name)
         # 声明一些变量
         self.place = ["TV", "sofa", "table", "bed", "tea table"]
+        self.place_description = {"TV":"you need to turn round first then go ahead. and the TV is on your right", "sofa":"you need go out first and then turn right. Sofa is in front of you",
+                                  "table":"you need to turn round first then go ahead. and the table is on your left", "bed":"you need go out first and then turn right. Bed is in front of you",
+                                  "tea table":"you need to turn right first then go ahead. and the tea table is on your left"}
         # amcl_pose话题的订阅器
         self.amcl_pose_sb = None
         self.position_result = []
@@ -333,7 +336,8 @@ class where_is_this():
             # print "waiting the door"
         self.TextToSpe.say("the door is open")
         # 走进屋子
-        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point33"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point13"], "point2", "first")
         # 抬头
         self.angle = -.4
         self.Motion.setAngles("Head", [0., self.angle], .2)
@@ -345,24 +349,35 @@ class where_is_this():
             self.navigate_to_place(self.audio_recog_result[0])
             num += 1
 
-
     def stop_motion(self):
         self.goal_cancel_pub.publish(GoalID())
         self.set_velocity(0, 0, 0)
 
     def navigate_to_place(self, place):
-        self.TextToSpe.say("I know where is the " + place + " ,please follow me")
+        self.TextToSpe.say("I know where is the " + place )
+        self.TextToSpe.say(self.place_description[place])
+        self.TextToSpe.say("please follow me")
         print place
         if place == "bed":
-            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point31"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point7"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point5"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point4"], "point2", "first")
         elif place == "table":
-            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point35"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point41"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point38"], "point2", "first")
+            # self.go_to_waypoint(self.point_dataset["point4"], "point2", "first")
         elif place == "TV":
-            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point34"], "point2", "first")
         elif place == "tea table":
-            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point14"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point42"], "point2", "first")
         elif place == "sofa":
-            self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point31"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point7"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point5"], "point2", "first")
+            self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
         self.TextToSpe.say("here is the " + place)
         # 抬头
         self.angle = -.4

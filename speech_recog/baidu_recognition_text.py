@@ -64,7 +64,10 @@ def get_word(token, path):
 
 
 def main(path):
-    token=get_token()
+    try:
+        token=get_token()
+    except:
+        return "00"
     try:
         ret = get_word(token, path)
         result = str(ret)

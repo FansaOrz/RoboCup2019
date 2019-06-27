@@ -11,7 +11,7 @@ import atexit
 import thread
 import actionlib
 from threading import Thread
-# from follow import pepper_follow
+from follow import pepper_follow
 from speech_recog import baidu_recognition_text
 from std_srvs.srv import Empty
 from std_msgs.msg import String
@@ -110,7 +110,7 @@ class carry_my_luggage():
         # 设置dialog语言
         self.TextToSpe.setLanguage("English")
         # track的程序名
-        self.track_behavior_name = "untitled-fbe05f/behavior_1"
+        self.track_behavior_name = "peopletrack-84f37e/behavior_1"
         # 录下的音频保存的路径
         self.audio_path = '/home/nao/audio/record.wav'
         self.recog_result = "None"
@@ -127,7 +127,7 @@ class carry_my_luggage():
             self.AutonomousLife.setState("disabled")
         self.RobotPos.goToPosture("Stand", .5)
         # follow me function
-        # self.pepper_follow_me = pepper_follow.follow_me(self.session)
+        self.pepper_follow_me = pepper_follow.follow_me(self.session)
         # 初始化录音
         self.record_delay = 2
         self.speech_hints = []
@@ -155,44 +155,41 @@ class carry_my_luggage():
         self.TextToSpe.say("Please talk to me after my eyes' color turn to white ")
         time.sleep(1)
         self.show_image("hand-me-the-bag.png")
-        self.TextToSpe.say("Dear operator, I can not grasp the bag. Please pass me the bag ")
+        self.TextToSpe.say("I can not grasp the bag. Could you please pass me ?")
         # 做出伸手的动作
         self.stretch_out_hand()
         time.sleep(5)
         self.angle = -.2
         self.Motion.setAngles("Head", [0., self.angle], .05)
-        # self.pepper_follow_me.start_follow()
-        if self.BehaviorMan.isBehaviorInstalled("untitled-fbe05f/behavior_1"):
-            # Check that it is not already running.
-            if (not self.BehaviorMan.isBehaviorRunning(self.track_behavior_name)):
-                # Launch behavior. This is a blocking call, use _async=True if you do not
-                # want to wait for the behavior to finish.
-                self.BehaviorMan.runBehavior(self.track_behavior_name, _async=True)
-                time.sleep(0.5)
-            else:
-                print "Behavior is already running."
+        self.pepper_follow_me.start_follow()
 
-        else:
-            print "Behavior not found."
-            return
         while not self.if_stop_follow:
             rospy.sleep(.5)
             self.start_recording(reset=True)
             self.analyze_content()
-        if (self.BehaviorMan.isBehaviorRunning(self.track_behavior_name)):
-            self.BehaviorMan.stopBehavior(self.track_behavior_name)
-            time.sleep(1.0)
-        else:
-            print "Behavior is already stopped."
+        self.pepper_follow_me.stop_follow()
+
+        # TODO
+        self.if_need_hand = False
+        time.sleep(2)
+        names_R = ["RElbowRoll", "RElbowYaw", "RHand", "RShoulderPitch", "RShoulderRoll", "RWristYaw"]
+        angleLists_R = [48.5 * almath.TO_RAD, 50.2 * almath.TO_RAD, 0.22 * almath.TO_RAD, 39.8 * almath.TO_RAD,
+                        -5.7 * almath.TO_RAD, 102.3 * almath.TO_RAD]
+        timeLists = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        isAbsolute = True
+        self.Motion.angleInterpolation(names_R, angleLists_R, timeLists, isAbsolute)
         self.TextToSpe.say("please take away your bag")
         self.TextToSpe.say("I will go back to the living room")
         self.start_head_fix()
-        # TODO
-        self.if_need_hand = False
+
+
         # 回到livingroom
-        self.go_to_waypoint(self.point_dataset["point3"], "point3")
-        self.go_to_waypoint(self.point_dataset["point4"], "point4")
-        self.go_to_waypoint(self.point_dataset["point5"], "point4")
+        self.Motion.moveTo(0, 0, 3)
+        self.go_to_waypoint(self.point_dataset["point6"])
+        self.go_to_waypoint(self.point_dataset["point33"])
+        self.go_to_waypoint(self.point_dataset["point14"])
+        self.go_to_waypoint(self.point_dataset["point16"])
+        self.go_to_waypoint(self.point_dataset["point25"])
         self.TextToSpe.say("I have arrived at living room")
 
     def start_head_fix(self):
@@ -229,19 +226,6 @@ class carry_my_luggage():
         timeLists = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         isAbsolute = True
         self.Motion.angleInterpolation(names_R, angleLists_R, timeLists, isAbsolute)
-        # self.Motion.angleInterpolation(names_L, angleLists_L, timeLists, isAbsolute)
-        # self.Motion.setStiffnesses("RElbowRoll", 1.0)
-        # self.Motion.setAngles("RElbowRoll", 52.3*almath.TO_RAD, fractionMaxSpeed)
-        # self.Motion.setStiffnesses("RElbowYaw", 1.0)
-        # self.Motion.setAngles("RElbowYaw", 62.4 * almath.TO_RAD, fractionMaxSpeed)
-        # self.Motion.setStiffnesses("RHand", 1.0)
-        # self.Motion.setAngles("RHand", 0.05 * almath.TO_RAD, fractionMaxSpeed)
-        # self.Motion.setStiffnesses("RShoulderPitch", 1.0)
-        # self.Motion.setAngles("RShoulderPitch", 45.1 * almath.TO_RAD, fractionMaxSpeed)
-        # self.Motion.setStiffnesses("RShoulderRoll", 1.0)
-        # self.Motion.setAngles("RShoulderRoll", -17.3 * almath.TO_RAD, fractionMaxSpeed)
-        # self.Motion.setStiffnesses("RWristYaw", 1.0)
-        # self.Motion.setAngles("RWristYaw", 104.5 * almath.TO_RAD, fractionMaxSpeed)
         time.sleep(4)
         self.start_hand_close()
 
@@ -318,7 +302,9 @@ class carry_my_luggage():
         names_R = ["RElbowRoll", "RElbowYaw", "RHand", "RShoulderPitch", "RShoulderRoll", "RWristYaw", "LElbowRoll", "LElbowYaw", "LHand", "LShoulderPitch", "LShoulderRoll", "LWristYaw"]
         angleLists_R = [47.5 * almath.TO_RAD, -44.1 * almath.TO_RAD, 0.07 * almath.TO_RAD, 91.1 * almath.TO_RAD, -14.2 * almath.TO_RAD, 72.2 * almath.TO_RAD,
                         -48.4 * almath.TO_RAD, 44.1 * almath.TO_RAD, 0.06 * almath.TO_RAD, 91.3 * almath.TO_RAD, 13.3 * almath.TO_RAD, -74.1 * almath.TO_RAD]
-        timeLists = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        angleLists_R = [88.8 * almath.TO_RAD, 13.7 * almath.TO_RAD, 0.07 * almath.TO_RAD, -116.6 * almath.TO_RAD, -25.8 * almath.TO_RAD, -49.2 * almath.TO_RAD,
+                        -88.5 * almath.TO_RAD, -13.1 * almath.TO_RAD, 0.06 * almath.TO_RAD, -117.9 * almath.TO_RAD, 24.9 * almath.TO_RAD, 45.6 * almath.TO_RAD]
+        timeLists = [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
         isAbsolute = True
         while True:
             if self.if_need_hand:

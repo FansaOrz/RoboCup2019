@@ -175,13 +175,15 @@ class find_my_mate():
         thread.start_new_thread(self.head_fix_thread, arg)
 
     def show_person_image(self, img_name):
-        cmd = "sshpass -p kurakura326 scp ./person.jpg nao@" + str(self.ip) + ":~/.local/share/PackageManager/apps/boot-config/html"
+        cmd = "sshpass -p kurakura326 scp ./person.jpg nao@" + str(self.ip) + \
+              ":~/.local/share/PackageManager/apps/boot-config/html"
         os.system(cmd)
         self.TabletSer.hideImage()
         self.TabletSer.showImageNoCache("http://198.18.0.1/apps/boot-config/" + img_name)
 
     def show_image(self, image_name):
-        # cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) + ":./person_image/person_image.png ~/.local/share/PackageManager/apps/boot-config/html"
+        # cmd = 'sshpass -p kurakura326 scp nao@' + str(self.ip) +
+        # ":./person_image/person_image.png ~/.local/share/PackageManager/apps/boot-config/html"
         # os.system(cmd)
         self.TabletSer.hideImage()
         self.TabletSer.showImage("http://198.18.0.1/apps/boot-config/" + str(image_name))
@@ -190,7 +192,7 @@ class find_my_mate():
         self.Motion.setStiffnesses("head", 1.0)
         while True:
             if self.head_fix:
-                #print "=====self.angle:====", self.angle
+                # print "=====self.angle:====", self.angle
                 self.Motion.setAngles("Head", [0., self.angle], .2)
             time.sleep(3)
 
@@ -390,7 +392,8 @@ class find_my_mate():
         for i in range(len(self.to_find_person_name)):
             self.say(str(self.to_find_person_name[i]) + " ")
         # 走进屋子，开始找人
-        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point8"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point13"], "point2", "first")
         person_found_num = 0
         while person_found_num != 2:
             self.find_person()
@@ -406,7 +409,9 @@ class find_my_mate():
                 self.show_image("instructions.png")
                 continue
         # 回到operator那里
-        self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point31"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point7"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point5"], "point2", "first")
         self.angle = -.5
         for i in range(len(self.position_result)):
             self.show_person_image("person_result"+str(i+1)+".jpg")
@@ -426,7 +431,8 @@ class find_my_mate():
         for i in range(len(self.to_find_person_name)):
             self.say(str(self.to_find_person_name[i]) + " ")
         # 走进屋子，开始找人
-        self.go_to_waypoint(self.point_dataset["point2"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point8"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point13"], "point2", "first")
         person_found_num = 0
         while person_found_num != 1:
             self.find_person()
@@ -441,7 +447,9 @@ class find_my_mate():
                 self.Motion.moveTo(0, 0, 0.52)
                 continue
         # 回到operator那里
-        self.go_to_waypoint(self.point_dataset["point1"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point31"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point7"], "point2", "first")
+        self.go_to_waypoint(self.point_dataset["point5"], "point2", "first")
         self.angle = -.5
         for i in range(len(self.position_result)):
             self.show_person_image("person_result" + str(i + 1) + ".jpg")
@@ -521,6 +529,7 @@ class find_my_mate():
         self.angle = -.2
         self.Motion.setAngles("Head", [0., self.angle], .2)
         AL_kQVGA = 2
+        current_right = current_left = current_bottom = current_top = 0
         # Need to add All color space variables
         AL_kRGBColorSpace = 13
         fps = 60
@@ -577,25 +586,18 @@ class find_my_mate():
                                 current_right = rect.right()
                         print  float(image_max) / float(width * height)
                         if float(image_max) / float(width * height) > .04:
+                            self.set_velocity(0, 0, 0)
                             self.get_image_switch = False
-                            self.if_stop = True
                         else:
                             # 判断是佛需要抬头
                             if current_bottom < height / 1.6:
                                 print "upupupupupupupupupupupupupupup", current_bottom
                                 self.angle -= .1
                                 self.Motion.setAngles("Head", [0., self.angle], .2)
-                            elif current_top > height / 1.6:
+                            elif current_top > 1.2 * height / 1.6:
                                 print "downdowndowndowndowndowndowndown", current_top
                                 self.angle += .1
                                 self.Motion.setAngles("Head", [0., self.angle], .2)
-                            # # 判断前进的距离
-                            # if float(image_max) / float(width * height) > .045:
-                            #     self.Motion.moveTo(.1, 0, 0)
-                            # elif float(image_max) / float(width * height) <= .02:
-                            #     self.Motion.moveTo(.3, 0, 0)
-                            # else:
-                            #     self.Motion.moveTo(0.2, 0, 0)
                             self.set_velocity(.15, 0, 0)
                             # 再旋转
                             center = (current_left + current_right) / 2
@@ -689,7 +691,7 @@ class find_my_mate():
 
 if __name__ == "__main__":
     params = {
-        'ip': "192.168.3.93",
+        'ip': "192.168.43.30",
         'port': 9559
     }
     find_my_mate(params)
