@@ -119,10 +119,10 @@ predict_image.restype = POINTER(c_float)
 class object_detection():
     def __init__(self):
         self.image_path = "/home/fansa/Src/pepper_example/RoboCup2019/object_detection/data/waving_detection.jpg"
-        self.net = load_net("/home/fansa/Src/pepper_example/RoboCup2019/object_detection/cfg/yolov2-voc.cfg", "/home/fansa/Src/pepper_example/RoboCup2019/object_detection/weights/waving_detection.backup", 0)
+        self.net = load_net("/home/fansa/Src/pepper_example/RoboCup2019/object_detection/cfg/yolov2-voc.cfg", "/home/fansa/Src/pepper_example/RoboCup2019/object_detection/weights/yolov2-voc_10000.weights", 0)
         self.meta = load_meta("/home/fansa/Src/pepper_example/RoboCup2019/object_detection/data/voc.data")
 
-    def detect(self, net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
+    def detect(self, net, meta, image, thresh=.6, hier_thresh=.5, nms=.45):
         im = load_image(image, 0, 0)
         # im = image
         num = c_int(0)
@@ -158,7 +158,7 @@ class object_detection():
                 name = r[i][0]
                 rect = r[i][2]
                 for i in range(len(rect)):
-                    cv2.putText(img, name, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2)),
+                    cv2.putText(img, name, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2 - 20)),
                                 cv2.FONT_HERSHEY_SIMPLEX,
                                 1, (255, 0, 0), 3)
                     cv2.rectangle(img, (int(rect[0] - rect[2] / 2), int(rect[1] - rect[3] / 2 - 10)),
@@ -169,8 +169,9 @@ class object_detection():
         return r
 
 #
-# if __name__ == "__main__":
-#
+if __name__ == "__main__":
+    a = object_detection()
+    a.main("/home/fansa/Software/darknet/training/images/frame3590.jpg")
 #     cap = cv2.VideoCapture(0)
 #     ok, frame = cap.read()
 #     cv2.namedWindow("aa", cv2.WINDOW_NORMAL)

@@ -9,6 +9,8 @@ import json
 
 def gender(img_name, upper_wear, upper_color, num):
     max_re = 0
+    max_re_index = 0
+    max_left = max_right = max_top = max_bottom = 0
     emotion = None
     max_rectangle_geder = "none"
     context = ssl._create_unverified_context()
@@ -50,30 +52,36 @@ def gender(img_name, upper_wear, upper_color, num):
             male_num += 1
         else:
             female_num += 1
-        cv2.putText(img, face_list[i]["gender"]["type"], (left-10, bottom+40), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3)
-        cv2.rectangle(img, (left, top), (right, bottom), (0, 0, 255), 2)
+        print "aaaaaaaa", (right-left) * (bottom-top)
         if (right-left) * (bottom-top) > max_re:
-            max_rectangle_geder = face_list[i]["gender"]["type"]
-        print "The gender of person", i + 1, "is", face_list[i]["gender"]["type"]
-        print "The age of person", i + 1, "is", face_list[i]["age"]
+            max_re = (right-left) * (bottom-top)
+            max_re_index = i
+            max_left = left
+            max_right = right
+            max_top = top
+            max_bottom = bottom
 
-        # When the result of racial detection is arabs, we think the person's skin is black
-        if face_list[i]["race"]["type"] == "arabs":
-            face_list[i]["race"]["type"] = "brown"
-
-        print "The color of skin of person", i + 1, "is", face_list[i]["race"]["type"]
-
-        expression = judge_expression(face_list[i]["expression"]["type"])# Judge the complexion of a person
-        print "The complexion of person", i + 1, "is", face_list[i]["expression"]["type"]
-
-        emotion = "The emotion of person " + str(i + 1) + " is " + str(face_list[i]["emotion"]["type"])
-        print emotion
-        print "================================="
-        cv2.putText(img, "Age:"+str(face_list[i]["age"]), (10,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-        cv2.putText(img, "Skin color:"+str(face_list[i]["race"]["type"]), (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-        cv2.putText(img, "Wearing:"+str(upper_color) + ' ' + str(upper_wear), (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+        # print "The gender of person", i + 1, "is", face_list[i]["gender"]["type"]
+        # print "The age of person", i + 1, "is", face_list[i]["age"]
+        #
+        # # When the result of racial detection is arabs, we think the person's skin is black
+        # if face_list[i]["race"]["type"] == "arabs":
+        #     face_list[i]["race"]["type"] = "brown"
+        #
+        # print "The color of skin of person", i + 1, "is", face_list[i]["race"]["type"]
+        #
+        # expression = judge_expression(face_list[i]["expression"]["type"])# Judge the complexion of a person
+        # print "The complexion of person", i + 1, "is", face_list[i]["expression"]["type"]
+        #
+        # emotion = "The emotion of person " + str(i + 1) + " is " + str(face_list[i]["emotion"]["type"])
+        # print emotion
+    cv2.putText(img, face_list[max_re_index]["gender"]["type"], (max_left-10, max_bottom+40), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3)
+    cv2.rectangle(img, (max_left, max_top), (max_right, max_bottom), (0, 0, 255), 2)
+    cv2.putText(img, "Age:" + str(face_list[max_re_index]["age"]), (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(img, "Skin color:" + str(face_list[max_re_index]["race"]["type"]), (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+    cv2.putText(img, "Wearing:" + str(upper_color) + ' ' + str(upper_wear), (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
     cv2.imwrite("./person_result"+str(num)+".jpg", img)
-    return face_list[i]["gender"]["type"], face_list[i]["age"], face_list[i]["race"]["type"]
+    return face_list[max_re_index]["gender"]["type"], face_list[max_re_index]["age"], face_list[max_re_index]["race"]["type"]
 
 
 def judge_expression(n):
@@ -88,4 +96,4 @@ def judge_expression(n):
 
 
 if __name__ == '__main__':
-    gender("./gender_result11.jpg", "short sleeve", "black")
+    gender("./gender_result11.jpg", "short sleeve", "black", 1)

@@ -422,7 +422,7 @@ class carry_my_luggage():
 
 def main():
     params = {
-        'ip' : "192.168.3.93",
+        'ip' : "192.168.43.167",
         'port' : 9559,
         'rgb_topic' : 'pepper_robot/camera/front/image_raw'
     }

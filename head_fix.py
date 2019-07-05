@@ -97,7 +97,7 @@ class speech_person_recog():
 
 if __name__ == "__main__":
     params = {
-        'ip': "192.168.3.93",
+        'ip': "192.168.43.167",
         'port': 9559
     }
     speech_person_recog(params)

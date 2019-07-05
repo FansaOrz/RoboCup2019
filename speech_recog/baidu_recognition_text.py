@@ -77,4 +77,4 @@ def main(path):
     print result
     return result
 if __name__ == '__main__':
-    main("/home/jiashi/Desktop/Link to RoboCup2019/audio_record/recog.wav")
+    main("./audio_record/recog.wav")

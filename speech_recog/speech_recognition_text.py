@@ -47,8 +47,7 @@ def main(path):
             else:
                 return "00"
         else:
-            print("\033[0;33m [Kamerider W] : You don't need stop record\033[0m")
-            time.sleep(5)
+            return "00"
 
 if __name__ == '__main__':
-    main("/home/jiashi/Desktop/Link to RoboCup2019/audio_record/test.wav")
+    main("/home/fansa/Src/pepper_example/RoboCup2019/audio_record/recog.wav")

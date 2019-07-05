@@ -175,7 +175,7 @@ class where_is_this():
             sum += msg.ranges[i]
         print "current_sum=:",sum
         # 大于阈值就认定门开了
-        if sum > 20:
+        if sum < 55:
             self.if_door_open = True
             self.laser_sb.unregister()
 
@@ -465,7 +465,7 @@ class where_is_this():
 
 if __name__ == "__main__":
     params = {
-        'ip': "192.168.3.93",
+        'ip': "169.254.104.28",
         'port': 9559
     }
     where_is_this(params)

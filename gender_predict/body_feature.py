@@ -61,6 +61,7 @@ def feature(img_name):
     dict_info = json.loads(content)
     print "================================="
     print content
+    print dict_info
     print "================================="
     male_num = 0
     female_num = 0
@@ -71,7 +72,7 @@ def feature(img_name):
     try:
         people_list = dict_info["person_info"]
     except:
-        return 0, 0, "none"
+        return 0, 0, "none", "none"
     for i in range(len(people_list)):
         left = int(people_list[i]["location"]["left"])
         top = int(people_list[i]["location"]["top"])
@@ -102,4 +103,4 @@ def feature(img_name):
 
 
 if __name__ == '__main__':
-    feature("./person_image.jpg")
+    feature("./person_body.jpg")
